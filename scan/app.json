@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "SCAN",
+    "slug": "blank",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes."
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e0ea0001-59a6-4dd7-a131-ef61771c2d9b"
+      }
+    },
+    "android": {
+      "package": "com.blank",
+      "adaptiveIcon": {
+        "foregroundImage": "./images/logoresized.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "orientation": "portrait",
+    "icon": "./images/logoresized.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./images/logoresized.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+  }
+}
+}
