@@ -37,14 +37,14 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.scanText}>SCAN</Text>
+   
       <View style={styles.logoContainer}>
         <Image
           source={require('./images/logo.png')}
           style={styles.logo}
         />
       </View>
-      <Text style={styles.registerText}>REGISTER</Text>
+
       <TextInput
         style={styles.input}
         placeholder="First Name"
@@ -75,7 +75,7 @@ export default function RegisterScreen({ navigation }) {
         onChangeText={setPassword}
       />
       <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-        <Text style={styles.registerButtonText}>REGISTER</Text>
+        <Text style={styles.registerButtonText}>Register</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.loginText}>LOGIN</Text>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 5,
     borderRadius: 80,
-    marginBottom: 20,
+    marginBottom: 50,
   },
   logo: {
     width: 100,
@@ -116,16 +116,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    width: "80%",
-    height: 40,
+    width: "90%",
+    height: 50,
     backgroundColor: "#fff",
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 20,
   },
   registerButton: {
-    width: "80%",
-    height: 40,
+    width: "90%",
+    height: 45,
     backgroundColor: "#fff",
     borderRadius: 20,
     alignItems: "center",
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   },
   registerButtonText: {
     color: "#A32926",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   },
   loginText: {
