@@ -28,16 +28,17 @@ db.connect(err => {
 // Register endpoint
 app.post('/register', (req, res) => {
   const { firstname, lastname, email, password } = req.body;
-  console.log('Request body:', req.body); // Log the request body
 
+  // Hash the password before storing it in the database
   const hashedPassword = bcrypt.hashSync(password, 8);
 
   const sql = 'INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)';
   db.query(sql, [firstname, lastname, email, hashedPassword], (err, result) => {
     if (err) {
-      console.error('SQL error:', err); // Log the SQL error
+      console.error('SQL error:', err);
       return res.status(500).send('Server error');
     }
+    console.log('User registered:', result);
     res.status(201).send('User registered');
   });
 });
@@ -49,6 +50,7 @@ app.post('/login', (req, res) => {
   const sql = 'SELECT * FROM users WHERE email = ?';
   db.query(sql, [email], (err, results) => {
     if (err) {
+      console.error('SQL error:', err);
       return res.status(500).send('Server error');
     }
     if (results.length === 0) {
@@ -61,7 +63,13 @@ app.post('/login', (req, res) => {
       return res.status(401).send('Invalid password');
     }
 
-    res.status(200).send('Login successful');
+    // Return more information if needed, such as user details
+    res.status(200).json({
+      message: 'Login successful',
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email
+    });
   });
 });
 

@@ -8,24 +8,25 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://192.168.0.220:3000/login', {
+      const response = await axios.post('http://192.168.254.103:3000/login', {
         email,
         password,
       });
 
       if (response.status === 200) {
         Alert.alert('Login successful');
-        navigation.navigate('Home');
+        navigation.navigate('Home', {
+          firstname: response.data.firstname,
+          lastname: response.data.lastname,
+        });
+        
       }
     } catch (error) {
       if (error.response) {
-        // Request made and server responded
-        Alert.alert('Login failed', error.response.data);
+        Alert.alert('Login failed', error.response.data.message);
       } else if (error.request) {
-        // The request was made but no response was received
         Alert.alert('Login failed', 'No response from server');
       } else {
-        // Something happened in setting up the request that triggered an Error
         Alert.alert('Login failed', 'Error', error.message);
       }
     }

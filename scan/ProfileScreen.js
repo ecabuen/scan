@@ -1,16 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  
+  const { firstname, lastname } = route.params || {}; // Ensure route.params is defined
 
   const handleLogout = () => {
     navigation.navigate('Login');
   };
 
   const handleHome = () => {
-    navigation.navigate('Home');
+    navigation.navigate('Home', {
+      firstname,
+      lastname,
+    });
   };
 
   return (
@@ -27,7 +33,7 @@ export default function ProfileScreen() {
         <View style={styles.profileContainer}>
           <Image source={require('./images/profile.png')} style={styles.profileImage} />
           <View style={styles.nameContainer}>
-            <Text style={styles.profileText}>NAME:</Text>
+            <Text style={styles.profileText}>NAME: {firstname} {lastname}</Text>
             <TouchableOpacity style={styles.editButton}>
               <Image source={require('./images/edit.png')} style={styles.editIcon} />
             </TouchableOpacity>
@@ -135,6 +141,8 @@ const styles = StyleSheet.create({
   profileText: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 10
+    
   },
   editButton: {
     marginLeft: 20,
