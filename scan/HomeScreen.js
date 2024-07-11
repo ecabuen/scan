@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Camera } from 'expo-camera';
 
@@ -16,7 +16,15 @@ export default function HomeScreen() {
   }, []);
 
   const handleLogout = () => {
-    navigation.navigate('Login');
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: () => navigation.navigate('Login') },
+      ],
+      { cancelable: false }
+    );
   };
 
   const handleProfile = () => {

@@ -1,12 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
 
   const handleLogout = () => {
-    navigation.navigate('Login');
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'OK', onPress: () => navigation.navigate('Login') },
+      ],
+      { cancelable: false }
+    );
   };
 
   const handleHome = () => {
@@ -115,7 +123,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     flexDirection: 'row',
-    alignItems: 'left',
+    alignItems: 'center',
     marginVertical: 20,
     paddingHorizontal: 20,
     backgroundColor: '#f0f0f0',
@@ -148,7 +156,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  
   optionContainer: {
     width: '45%',
     alignItems: 'center',
