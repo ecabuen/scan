@@ -33,7 +33,7 @@ export default function ProfileScreen() {
         <View style={styles.profileContainer}>
           <Image source={require('./images/profile.png')} style={styles.profileImage} />
           <View style={styles.nameContainer}>
-            <Text style={styles.profileText}>NAME: {firstname} {lastname}</Text>
+            <Text style={styles.profileText}>{firstname} {lastname}</Text>
             <TouchableOpacity style={styles.editButton}>
               <Image source={require('./images/edit.png')} style={styles.editIcon} />
             </TouchableOpacity>
@@ -121,31 +121,28 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     flexDirection: 'row',
-    alignItems: 'left',
+    alignItems: 'center',
     marginVertical: 20,
-    paddingHorizontal: 20,
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
     paddingVertical: 15,
+    paddingHorizontal: 20,
     justifyContent: 'space-between',
   },
   profileImage: {
     width: 80,
     height: 80,
-    marginRight: 20,
   },
   nameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flex: 1,
+    marginLeft: 20,
   },
   profileText: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 10
-    
   },
   editButton: {
-    marginLeft: 20,
+    marginLeft: 'auto',
   },
   editIcon: {
     width: 20,
@@ -156,7 +153,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
-  
   optionContainer: {
     width: '45%',
     alignItems: 'center',
