@@ -1,11 +1,8 @@
 import React from 'react';
-<<<<<<< HEAD
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-=======
+
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
->>>>>>> ff0a7fef191edc332b1536945db20ecadf707214
+import { useNavigation, useRoute } from '@react-navigation/native';
+
 
 export default function ProfileScreen() {
   const navigation = useNavigation();

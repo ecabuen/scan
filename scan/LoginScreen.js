@@ -9,7 +9,7 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
     try {
 
-      const response = await axios.post('http://192.168.254.103:3000/login', {
+      const response = await axios.post('http://192.168.0.250:3000/login', {
         email,
         password,
       });

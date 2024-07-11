@@ -10,7 +10,7 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post('http://192.168.254.107:3000/register', {
+      const response = await axios.post('http://192.168.0.250:3000/register', {
         firstname, 
         lastname, 
         email,

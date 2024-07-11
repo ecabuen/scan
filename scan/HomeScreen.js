@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { Camera } from 'expo-camera';
 
