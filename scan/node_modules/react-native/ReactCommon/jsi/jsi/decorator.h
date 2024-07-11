@@ -126,9 +126,6 @@ class RuntimeDecorator : public Base, private jsi::Instrumentation {
       const std::shared_ptr<const PreparedJavaScript>& js) override {
     return plain().evaluatePreparedJavaScript(js);
   }
-  void queueMicrotask(const jsi::Function& callback) override {
-    return plain().queueMicrotask(callback);
-  }
   bool drainMicrotasks(int maxMicrotasksHint) override {
     return plain().drainMicrotasks(maxMicrotasksHint);
   }
@@ -546,10 +543,6 @@ class WithRuntimeDecorator : public RuntimeDecorator<Plain, Base> {
       const std::shared_ptr<const PreparedJavaScript>& js) override {
     Around around{with_};
     return RD::evaluatePreparedJavaScript(js);
-  }
-  void queueMicrotask(const Function& callback) override {
-    Around around{with_};
-    RD::queueMicrotask(callback);
   }
   bool drainMicrotasks(int maxMicrotasksHint) override {
     Around around{with_};
