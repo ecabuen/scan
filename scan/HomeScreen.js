@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Camera } from 'expo-camera';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [hasPermission, setHasPermission] = useState(null);
+  const route = useRoute();
+  const { firstname, lastname } = route.params || {};
+  console.log('Firstname:', firstname);
+  console.log('Lastname:', lastname);
+  
 
   useEffect(() => {
     (async () => {
@@ -20,7 +25,10 @@ export default function HomeScreen() {
   };
 
   const handleProfile = () => {
-    navigation.navigate('Profile');
+    navigation.navigate('Profile', {
+      firstname,
+      lastname,
+    });
   };
 
   const handleCamera = async () => {
