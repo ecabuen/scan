@@ -29,7 +29,7 @@
     "icon": "./images/logoresized.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./images/logoresized.png",
+      "image": "./images/bsu-logo.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
   }

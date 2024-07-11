@@ -1,14 +1,13 @@
 import React from 'react';
-
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  
-  const { firstname, lastname } = route.params || {}; // Ensure route.params is defined
+  const { firstname, lastname } = route.params || {};
 
   const handleLogout = () => {
     Alert.alert(
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
   footer: {
     position: 'absolute',
     bottom: 0,
-    width: '100%',
+    width: width,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
