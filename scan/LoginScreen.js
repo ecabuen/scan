@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform } from "react-native";
+import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
 
 export default function LoginScreen({ navigation }) {
@@ -7,124 +8,163 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Login Failed', 'All fields are required');
+      return;
+    }
+  
     try {
-
-      const response = await axios.post('http://192.168.0.250:3000/login', {
+      const response = await axios.post('http://192.168.0.100:3000/login', {
         email,
         password,
       });
-
+  
       if (response.status === 200) {
-        Alert.alert('Login successful');
+        Alert.alert('Login successful', `Welcome back, ${response.data.firstname}!`);
         navigation.navigate('Home', {
           firstname: response.data.firstname,
           lastname: response.data.lastname,
+          email: response.data.email,
+          id: response.data.id,
         });
-        
+        setPassword(''); // Clear password field
       }
     } catch (error) {
-      if (error.response) {
+      if (error.response && error.response.status === 401) {
+        Alert.alert('Login failed', 'Wrong username or password');
+      } else if (error.response) {
         Alert.alert('Login failed', error.response.data.message);
       } else if (error.request) {
         Alert.alert('Login failed', 'No response from server');
       } else {
-        Alert.alert('Login failed', 'Error', error.message);
+        Alert.alert('Login failed', error.message);
       }
     }
   };
+  
 
   return (
-    <View style={styles.container}>
- 
+    <KeyboardAvoidingView
+      style={styles.wrapper}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <View style={styles.logoContainer}>
         <Image
-          source={require('./images/logo.png')}
+          source={require('./images/bsu.png')}
           style={styles.logo}
         />
       </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#999"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Log in</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.createAccountText}>CREATE AN ACCOUNT</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.container}>
+        <Text style={styles.loginText}>Login to your Account</Text>
+        <View style={styles.inputContainer}>
+          <FontAwesome name="envelope" size={20} color="#A32926" style={styles.icon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#999"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none" // Ensure email is entered in lowercase
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <FontAwesome name="lock" size={20} color="#A32926" style={styles.icon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#999"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+        </View>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Log in</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Register')} style={styles.createAccountButton}>
+          <Text style={styles.createAccountText}>CREATE AN ACCOUNT</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
-
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
     backgroundColor: "#A32926",
     alignItems: "center",
-    justifyContent: "center",
-  },
-  scanText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    fontFamily: "Helvetica",
-    color: "#fff",
-    marginBottom: 20,
+    justifyContent: "flex-end",
   },
   logoContainer: {
-    backgroundColor: "#fff",
-    padding: 5,
-    borderRadius: 80,
-    marginBottom: 50,
+    position: 'absolute',
+    top: 100,
+    width: 110,
+    height: 115,
+   // backgroundColor: "#fff",
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 110,
+    height: 105,
+  },
+  container: {
+    width: "100%",
+    height: "70%",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 30,
+    alignItems: "center",
   },
   loginText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    fontFamily: "Helvetica",
-    color: "#fff",
+    color: "#A32926",
     marginBottom: 20,
   },
-  input: {
-    width: "90%",
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: "100%",
     height: 50,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f0f0",
     borderRadius: 10,
     paddingHorizontal: 10,
     marginBottom: 20,
   },
+  icon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+  },
   loginButton: {
-    width: "90%",
+    width: "100%",
     height: 45,
-    backgroundColor: "#fff",
-    borderRadius: 20,
+    backgroundColor: "#A32926",
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   loginButtonText: {
-    color: "#A32926",
-    fontSize: 20,
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
   },
+  createAccountButton: {
+    marginBottom: 20,
+  },
   createAccountText: {
-    color: "#fff",
+    color: "#A32926",
     fontSize: 16,
-    textDecorationLine: "underline",
   },
 });
