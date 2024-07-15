@@ -1,10 +1,16 @@
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const bcrypt = require('bcrypt'); // Import bcrypt
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+
 
 const app = express();
+app.use(express.json());
 const port = 3000;
 
 app.use(bodyParser.json());
@@ -15,10 +21,10 @@ const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'scan'
+  database: 'scan',
 });
 
-db.connect(err => {
+db.connect((err) => {
   if (err) {
     throw err;
   }
@@ -47,31 +53,149 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
-  const sql = 'SELECT * FROM users WHERE email = ?';
+  const sql = 'SELECT * FROM users WHERE BINARY email = ?'; // Case-sensitive email comparison
   db.query(sql, [email], (err, results) => {
     if (err) {
       console.error('SQL error:', err);
       return res.status(500).send('Server error');
     }
     if (results.length === 0) {
-      return res.status(404).send('User not found');
+      return res.status(401).json({ message: 'Wrong username or password' });
     }
 
     const user = results[0];
     const isPasswordValid = bcrypt.compareSync(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).send('Invalid password');
+      return res.status(401).json({ message: 'Wrong username or password' });
     }
 
-    // Return more information if needed, such as user details
     res.status(200).json({
       message: 'Login successful',
       firstname: user.firstname,
       lastname: user.lastname,
-      email: user.email
+      email: user.email,
+      id: user.id
     });
   });
 });
+
+// Update profile endpoint
+const teacherImageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = '../scan/teacherimages';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const { firstname, lastname } = req.body;
+    const filename = `${firstname}-${lastname}.jpg`;
+    cb(null, filename);
+  },
+});
+
+const uploadTeacherImage = multer({ storage: teacherImageStorage }).single('profilePic');
+
+// Update profile endpoint
+app.put('/update-profile/:id', uploadTeacherImage, (req, res) => {
+  const { id } = req.params;
+  const { firstname, lastname, email } = req.body;
+  const profilePic = req.file ? req.file.filename : null;
+
+  const sql = 'UPDATE users SET firstname = ?, lastname = ?, email = ?, profile_pic = ? WHERE id = ?';
+  const params = [firstname, lastname, email, profilePic, id];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).send('Server error');
+    }
+    res.status(200).json({
+      message: 'Profile updated successfully',
+      data: { id, firstname, lastname, email, profilePic },
+    });
+  });
+});
+//Add student
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = '../scan/studentimages';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${req.body.name}.jpg`);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+app.post('/add-student', upload.single('profilePic'), (req, res) => {
+  const { name, id } = req.body;
+  const profilePic = req.file ? req.file.filename : null;
+
+  // Insert student data into database
+  const sql = 'INSERT INTO student (name, profile_pic, teacher_id) VALUES (?, ?, ?)';
+  db.query(sql, [name, profilePic, id], (err, result) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to register student' });
+    }
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Student registered successfully',
+      data: { name, profilePic }
+    });
+  });
+});
+
+//get student
+app.get('/students/:id', (req, res) => {
+  const teacherId = req.params.id;
+
+  const sql = 'SELECT * FROM student WHERE teacher_id = ?';
+  db.query(sql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: results,
+    });
+  });
+});
+// update student
+// update student
+app.put('/update-student/:studentID', (req, res) => {
+  const studentID = req.params.studentID; // Use 'studentID' from route params
+  const { name } = req.body;
+
+  const sql = 'UPDATE student SET name = ? WHERE studentID = ?'; // Corrected to use 'studentID'
+  const params = [name, studentID];
+
+  db.query(sql, params, (err, result) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to update student' });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Student name updated successfully',
+      data: { id: studentID, name }
+    });
+  });
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
