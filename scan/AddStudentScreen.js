@@ -8,9 +8,11 @@ import * as FileSystem from 'expo-file-system';
 export default function AddStudentScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
+  const [gmail, setGmail] = useState(''); //add
   const [profilePic, setProfilePic] = useState(null);
   const route = useRoute();
   const { firstname, lastname,email,id } = route.params || {};
+  console.log('Route params:', { firstname, lastname, email, id });
   const handleBack = () => {
     navigation.goBack();
   };
@@ -33,6 +35,7 @@ export default function AddStudentScreen() {
     const filename = `${name}.jpg`; 
 
     formData.append('name', name);
+    formData.append('gmail', gmail);  //add
     formData.append('profilePic', {
       uri,
       name: filename,
@@ -52,6 +55,9 @@ export default function AddStudentScreen() {
         const data = await response.json();
         Alert.alert('Success', 'Student registered successfully');
         console.log('Student registered:', data);
+        setProfilePic(null); //add
+        setGmail(null); //add
+        setName(null); //add
       } else {
         const errorData = await response.text();
         console.error('Error response:', errorData);
@@ -68,7 +74,7 @@ export default function AddStudentScreen() {
       Alert.alert('Error', 'Please select a profile picture.');
       return;
     }
-    uploadImage(profilePic, name, id);
+    uploadImage(profilePic, name, id, gmail); //add
   };
 
   return (
@@ -98,10 +104,16 @@ export default function AddStudentScreen() {
         
         <TextInput
           style={styles.input}
-          placeholder="Name"
+          placeholder="Enter Name"
           value={name}
           onChangeText={setName}
         />
+        <TextInput //add
+          style={styles.input} //add
+          placeholder="Enter gmail"  //add
+          value={gmail} //add
+          onChangeText={setGmail} //add
+        /> 
         <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
