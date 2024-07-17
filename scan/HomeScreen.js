@@ -55,8 +55,6 @@ export default function HomeScreen() {
   const maleStudents = 18;
   const femaleStudents = totalStudents - maleStudents;
 
-  
-
   const genderData = [
     {
       name: 'Male',
@@ -78,7 +76,7 @@ export default function HomeScreen() {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     datasets: [
       {
-        data: [5, 6, 7, 6, 7],
+        data: [28, 27, 29, 26, 28],
       },
     ],
   };
@@ -87,16 +85,16 @@ export default function HomeScreen() {
     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
     datasets: [
       {
-        data: [23, 25, 27, 24],
+        data: [140, 135, 145, 130],
       },
     ],
   };
 
   const monthlyData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
     datasets: [
       {
-        data: [95, 97, 94, 96, 98, 97, 95, 96, 97, 98, 99, 97],
+        data: [580, 560, 540, 580, 560, 540, 560, 580, 560, 540],
       },
     ],
   };
@@ -112,6 +110,7 @@ export default function HomeScreen() {
       borderRadius: 16,
     },
     barPercentage: 0.5,
+    decimalPlaces: 0, // No decimals
   };
 
   const getCurrentData = () => {
@@ -125,6 +124,10 @@ export default function HomeScreen() {
       default:
         return dailyData;
     }
+  };
+
+  const getPercentage = (value, total) => {
+    return ((value / total) * 100).toFixed(0) + '%';
   };
 
   return (
@@ -168,15 +171,16 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          
-
           <View style={styles.analyticsContainer}>
             <Text style={styles.analyticsTitle}>Gender Breakdown</Text>
             <PieChart
               style={styles.chart}
-              data={genderData}
-              width={width * 0.9}
-              height={220}
+              data={genderData.map(data => ({
+                ...data,
+                name: `${data.name} (${getPercentage(data.population, totalStudents)})`,
+              }))}
+              width={width * 1}
+              height={200}
               chartConfig={chartConfig}
               accessor="population"
               backgroundColor="transparent"
@@ -298,6 +302,7 @@ const styles = StyleSheet.create({
   analyticsContainer: {
     marginTop: 20,
     alignItems: 'center',
+    paddingRight: 20,
   },
   analyticsTitle: {
     fontSize: 20,
