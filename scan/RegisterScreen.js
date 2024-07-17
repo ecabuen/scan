@@ -8,6 +8,7 @@ export default function RegisterScreen({ navigation }) {
   const [lastname, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
     // Input validation
@@ -17,7 +18,7 @@ export default function RegisterScreen({ navigation }) {
     }
 
     try {
-      const response = await axios.post('http://192.168.0.100:3000/register', {
+      const response = await axios.post('http://192.168.0.115:3000/register', {
         firstname, 
         lastname, 
         email,
@@ -85,16 +86,19 @@ export default function RegisterScreen({ navigation }) {
             style={styles.input}
             placeholder="Password"
             placeholderTextColor="#999"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#A32926" />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.loginText}>LOGIN</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginButton}>
+          <Text style={styles.loginButtonText}>Already have an account? Log in</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -110,10 +114,9 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    top: 100,
+    top: 50,
     width: 110,
     height: 115,
-   // backgroundColor: "#fff",
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
@@ -129,7 +132,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    height: "70%",
+    height: "80%",
     backgroundColor: "#fff",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -154,6 +157,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+    width: 20,
+    height: 20,
   },
   input: {
     flex: 1,
@@ -165,14 +170,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   registerButtonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
   },
-  loginText: {
+  loginButton: {
+    marginBottom: 20,
+  },
+  loginButtonText: {
     color: "#A32926",
     fontSize: 16,
   },
