@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Camera } from 'expo-camera';
+import Icon from 'react-native-vector-icons/FontAwesome5';
+import { PieChart, LineChart } from 'react-native-chart-kit';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-export default function ProfileScreen() {
+export default function HomeScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { firstname, lastname, email,id } = route.params || {};
-  const [activeIcon, setActiveIcon] = useState('profile'); // Added state for active icon
+  const { firstname, lastname, email, id } = route.params || {};
+  const [activeIcon, setActiveIcon] = useState('profile');
   const [hasPermission, setHasPermission] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('daily');
 
   useEffect(() => {
     (async () => {
@@ -46,11 +48,84 @@ export default function ProfileScreen() {
     }
   };
 
-  
-
   const totalStudents = 30;
   const presentStudents = 28;
-  const absentStudents = totalStudents - presentStudents;
+  const lateStudents = 2;
+  const absentStudents = totalStudents - presentStudents - lateStudents;
+  const maleStudents = 18;
+  const femaleStudents = totalStudents - maleStudents;
+
+  
+
+  const genderData = [
+    {
+      name: 'Male',
+      population: maleStudents,
+      color: '#A32926',
+      legendFontColor: '#000',
+      legendFontSize: 15,
+    },
+    {
+      name: 'Female',
+      population: femaleStudents,
+      color: '#e59997',
+      legendFontColor: '#000',
+      legendFontSize: 15,
+    },
+  ];
+
+  const dailyData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [
+      {
+        data: [5, 6, 7, 6, 7],
+      },
+    ],
+  };
+
+  const weeklyData = {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [
+      {
+        data: [23, 25, 27, 24],
+      },
+    ],
+  };
+
+  const monthlyData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        data: [95, 97, 94, 96, 98, 97, 95, 96, 97, 98, 99, 97],
+      },
+    ],
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: '#F2F2F2',
+    backgroundGradientTo: '#F2F2F2',
+    fillShadowGradient: '#A32926',
+    color: (opacity = 1) => `rgba(163, 41, 38, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
+
+    style: {
+      borderRadius: 16,
+    },
+    barPercentage: 0.5,
+  };
+
+  const getCurrentData = () => {
+    switch (selectedTab) {
+      case 'daily':
+        return dailyData;
+      case 'weekly':
+        return weeklyData;
+      case 'monthly':
+        return monthlyData;
+      default:
+        return dailyData;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -60,44 +135,94 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Content Section */}
       <View style={styles.contentSection}>
-        <View style={styles.dashboardCard}>
-          <Icon name="users" size={30} color="#A32926" />
-          <View style={styles.dashboardCardContent}>
-            <Text style={styles.dashboardCardLabel}>Total Students</Text>
-            <Text style={styles.dashboardCardValue}>{totalStudents}</Text>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.cardContainer}>
+            <View style={styles.dashboardCard}>
+              <Icon name="users" size={30} color="#fff" />
+              <View style={styles.dashboardCardContent}>
+                <Text style={styles.dashboardCardLabel}>Total Students</Text>
+                <Text style={styles.dashboardCardValue}>{totalStudents}</Text>
+              </View>
+            </View>
+            <View style={styles.dashboardCard}>
+              <Icon name="user-check" size={30} color="#fff" />
+              <View style={styles.dashboardCardContent}>
+                <Text style={styles.dashboardCardLabel}>Present</Text>
+                <Text style={styles.dashboardCardValue}>{presentStudents}</Text>
+              </View>
+            </View>
+            <View style={styles.dashboardCard}>
+              <Icon name="user-times" size={30} color="#fff" />
+              <View style={styles.dashboardCardContent}>
+                <Text style={styles.dashboardCardLabel}>Absent</Text>
+                <Text style={styles.dashboardCardValue}>{absentStudents}</Text>
+              </View>
+            </View>
+            <View style={styles.dashboardCard}>
+              <Icon name="user-clock" size={30} color="#fff" />
+              <View style={styles.dashboardCardContent}>
+                <Text style={styles.dashboardCardLabel}>Late</Text>
+                <Text style={styles.dashboardCardValue}>{lateStudents}</Text>
+              </View>
+            </View>
           </View>
-        </View>
-        <View style={styles.dashboardCard}>
-          <Icon name="user-check" size={30} color="#A32926" />
-          <View style={styles.dashboardCardContent}>
-            <Text style={styles.dashboardCardLabel}>Present</Text>
-            <Text style={styles.dashboardCardValue}>{presentStudents}</Text>
+
+          
+
+          <View style={styles.analyticsContainer}>
+            <Text style={styles.analyticsTitle}>Gender Breakdown</Text>
+            <PieChart
+              style={styles.chart}
+              data={genderData}
+              width={width * 0.9}
+              height={220}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
           </View>
-        </View>
-        <View style={styles.dashboardCard}>
-          <Icon name="user-times" size={30} color="#A32926" />
-          <View style={styles.dashboardCardContent}>
-            <Text style={styles.dashboardCardLabel}>Absent</Text>
-            <Text style={styles.dashboardCardValue}>{absentStudents}</Text>
+
+          <View style={styles.tabContainer}>
+            <TouchableOpacity onPress={() => setSelectedTab('daily')} style={[styles.tab, selectedTab === 'daily' && styles.activeTab]}>
+              <Text style={styles.tabText}>Daily</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSelectedTab('weekly')} style={[styles.tab, selectedTab === 'weekly' && styles.activeTab]}>
+              <Text style={styles.tabText}>Weekly</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSelectedTab('monthly')} style={[styles.tab, selectedTab === 'monthly' && styles.activeTab]}>
+              <Text style={styles.tabText}>Monthly</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+
+          <View style={styles.analyticsContainer}>
+            <Text style={styles.analyticsTitle}>{`${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} Attendance`}</Text>
+            <LineChart
+              style={styles.chart}
+              data={getCurrentData()}
+              width={width * 0.9}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+            />
+          </View>
+        </ScrollView>
       </View>
 
-      {/* Footer Section */}
       <View style={styles.footerContainer}>
         <View style={styles.footer}>
-          <TouchableOpacity style={[styles.iconWrapper]}>
-            <Icon name="tachometer-alt" size={35} color="#A32926" style={styles.icon} />
+          <TouchableOpacity style={styles.iconWrapper}>
+            <Icon name="tachometer-alt" size={35} color="#A32926" />
           </TouchableOpacity>
           <View style={styles.cameraButtonWrapper}>
             <TouchableOpacity onPress={handleCamera} style={styles.cameraButton}>
               <Icon name="camera" size={40} color="#fff" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={handleProfile} style={[styles.active]}>
-            <Icon name="user-alt" size={35}  color="#A32926" style={styles.icon} />
+          <TouchableOpacity onPress={handleProfile} style={[styles.iconWrapper]}>
+            <Icon name="user-alt"  size={35} color="#A32926" />
           </TouchableOpacity>
         </View>
       </View>
@@ -112,7 +237,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: '#A32926',
-    height: 200,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -121,48 +246,67 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     paddingTop: 40,
-    paddingBottom: 20,
+    paddingBottom: 60,
   },
   headerText: {
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
   },
+  scrollView: {
+    width: '100%',
+    marginBottom: 80,
+  },
   contentSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingVertical: 20,
+    paddingHorizontal: 10,
     backgroundColor: '#F2F2F2',
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    overflow: 'hidden',
-    marginTop: -50,
-    zIndex: 1,
+    marginTop: -height * 0.08,
+  },
+  cardContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   dashboardCard: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#A32926',
     borderRadius: 10,
-    padding: 20,
+    padding: 15,
     marginVertical: 10,
-    width: '90%',
-    flexDirection: 'row',
+    width: '49%',
+    justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
   },
   dashboardCardContent: {
-    marginLeft: 10,
+    alignItems: 'center',
+    marginTop: 10,
   },
   dashboardCardLabel: {
-    fontSize: 18,
-    color: '#333',
+    fontSize: 16,
+    color: '#fff',
   },
   dashboardCardValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#fff',
     marginTop: 5,
+  },
+  analyticsContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  analyticsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  chart: {
+    marginTop: 10,
   },
   footerContainer: {
     position: 'absolute',
@@ -189,10 +333,10 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   cameraButtonWrapper: {
-    paddingRight:15,
+    
     bottom: 25,
-    zIndex: 10,
-    alignSelf: 'center',
+    zIndex: 5,
+    alignSelf: 'center'
   },
   cameraButton: {
     width: 70,
@@ -215,5 +359,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 25,
     padding: 5,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
+  },
+  tab: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: '#ddd',
+  },
+  activeTab: {
+    backgroundColor: '#A32926',
+  },
+  tabText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
