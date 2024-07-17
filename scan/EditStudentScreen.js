@@ -6,9 +6,10 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 export default function EditStudentScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { studentName, studentID } = route.params || {}; // Ensure studentId is correctly extracted
+  const { studentName, studentID, studentGmail } = route.params || {}; // add
   // Receive studentName from navigation params
   const [name, setName] = useState(studentName); // State to manage the editable name
+  const [gmail, setGmail] = useState(studentGmail); //add
 
   const handleBack = () => {
     navigation.goBack();
@@ -30,13 +31,13 @@ export default function EditStudentScreen() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, gmail }), //add
     })
     .then(response => {
       if (!response.ok) {
         throw new Error('Failed to update student');
       }
-      alert(`Student name updated to: ${name}`);
+      alert(`Student information updated successfully`);  //add
       navigation.goBack();
     })
     .catch(error => {
@@ -76,6 +77,13 @@ export default function EditStudentScreen() {
           placeholder="Name"
           value={name}
           onChangeText={text => setName(text)}
+        />
+                
+        <TextInput //add
+          style={styles.input} //add
+          placeholder="Gmail" //add
+          value={gmail} //add
+          onChangeText={text => setGmail(text)} //add
         />
         <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
           <Text style={styles.updateButtonText} >Update</Text>

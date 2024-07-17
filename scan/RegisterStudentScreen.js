@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 
@@ -11,13 +11,9 @@ export default function RegisterStudent() {
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.0.100:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.254.103:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
@@ -27,12 +23,18 @@ export default function RegisterStudent() {
     }
   };
 
+  // Fetch students initially and on focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudents();
+    }, [])
+  );
+
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleAdd = () => {
-    console.log('Navigating to AddStudentScreen with data:', { firstname, lastname, email, id });
     navigation.navigate('AddStudentScreen', {
       firstname,
       lastname,
@@ -41,16 +43,13 @@ export default function RegisterStudent() {
     });
   };
 
-  const handleEdit = (studentName, studentID) => {
-    console.log('Editing student:', studentName, studentID);
-  
+  const handleEdit = (studentName, studentID, gmail) => {
     navigation.navigate('EditStudentScreen', {
       studentName,
-      studentID  
+      studentID,
+      studentGmail: gmail
     });
   };
-  
-  
 
   const filteredStudents = students.filter(student => {
     return student.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -80,7 +79,7 @@ export default function RegisterStudent() {
           <View key={index} style={styles.studentCard}>
             <Icon name="user-alt" size={20} color="#A32926" style={styles.icon} />
             <Text style={styles.name}>{student.name}</Text>
-            <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID)}>
+            <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail)}>
               <Icon name="edit" size={20} color="#A32926" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteButton}>
