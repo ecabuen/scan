@@ -6,19 +6,20 @@ import axios from 'axios';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Login Failed', 'All fields are required');
       return;
     }
-  
+
     try {
-      const response = await axios.post('http://192.168.0.100:3000/login', {
+      const response = await axios.post('http://192.168.0.115:3000/login', {
         email,
         password,
       });
-  
+
       if (response.status === 200) {
         Alert.alert('Login successful', `Welcome back, ${response.data.firstname}!`);
         navigation.navigate('Home', {
@@ -41,7 +42,6 @@ export default function LoginScreen({ navigation }) {
       }
     }
   };
-  
 
   return (
     <KeyboardAvoidingView
@@ -73,10 +73,13 @@ export default function LoginScreen({ navigation }) {
             style={styles.input}
             placeholder="Password"
             placeholderTextColor="#999"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#A32926" />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Log in</Text>
@@ -101,7 +104,6 @@ const styles = StyleSheet.create({
     top: 100,
     width: 110,
     height: 115,
-   // backgroundColor: "#fff",
     borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
@@ -142,6 +144,8 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+    width: 20,
+    height: 20,
   },
   input: {
     flex: 1,
