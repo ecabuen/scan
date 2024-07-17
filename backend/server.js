@@ -135,12 +135,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.post('/add-student', upload.single('profilePic'), (req, res) => {
-  const { name, id } = req.body;
+  const { name, gmail, id } = req.body; //add
   const profilePic = req.file ? req.file.filename : null;
 
   // Insert student data into database
-  const sql = 'INSERT INTO student (name, profile_pic, teacher_id) VALUES (?, ?, ?)';
-  db.query(sql, [name, profilePic, id], (err, result) => {
+  const sql = 'INSERT INTO student (name, gmail, profile_pic, teacher_id) VALUES (?, ?, ?, ?)'; //add
+  db.query(sql, [name, gmail, profilePic, id], (err, result) => {
     if (err) {
       console.error('SQL error:', err);
       return res.status(500).json({ status: 'error', message: 'Failed to register student' });
@@ -149,7 +149,7 @@ app.post('/add-student', upload.single('profilePic'), (req, res) => {
     res.status(201).json({
       status: 'success',
       message: 'Student registered successfully',
-      data: { name, profilePic }
+      data: { name, gmail, profilePic } //add
     });
   });
 });
@@ -171,14 +171,14 @@ app.get('/students/:id', (req, res) => {
     });
   });
 });
-// update student
+
 // update student
 app.put('/update-student/:studentID', (req, res) => {
-  const studentID = req.params.studentID; // Use 'studentID' from route params
-  const { name } = req.body;
+  const studentID = req.params.studentID; 
+  const { name,gmail } = req.body; //add
 
-  const sql = 'UPDATE student SET name = ? WHERE studentID = ?'; // Corrected to use 'studentID'
-  const params = [name, studentID];
+  const sql = 'UPDATE student SET name = ?, gmail = ? WHERE studentID = ?'; // Corrected to use 'studentID'
+  const params = [name,gmail, studentID]; //add
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -188,8 +188,8 @@ app.put('/update-student/:studentID', (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      message: 'Student name updated successfully',
-      data: { id: studentID, name }
+      message: 'Student information updated successfully', //add
+      data: { id: studentID, name, gmail } //add
     });
   });
 });
