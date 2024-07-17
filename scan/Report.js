@@ -8,27 +8,31 @@ import { FontAwesome5 } from '@expo/vector-icons'; // Import FontAwesome5 for us
 
 const data = [
   {
-    name: 'Harvey Specter',
+    name: 'Arvin Kelly Butiong',
     attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
   },
   {
-    name: 'Mike Ross',
+    name: 'Raica Kathleen Perez',
     attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
   },
   {
-    name: 'Monica Geller',
+    name: 'Eloisa Cabuen',
     attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
   },
   {
-    name: 'Kit Harington',
+    name: 'Jennie Kim',
     attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
   },
   {
-    name: 'Ross Geller',
+    name: 'Kang Haerin',
     attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
   },
   {
-    name: 'Peter Dinkledge',
+    name: 'Hanni Pham',
+    attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
+  },
+  {
+    name: 'Kim Minji',
     attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
   }
 ];
@@ -99,7 +103,7 @@ export default function HomeScreen() {
             <View key={idx} style={styles.studentContainer}>
               <FontAwesome5
                 name="user-alt"
-                size={24}
+                size={45}
                 color="#A32926"
                 style={styles.profilePic}
               />
@@ -170,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
     
-    paddingHorizontal: 20, // Added for spacing
+    paddingHorizontal: 15, // Added for spacing
   },
   backButton: {
     marginRight: 10, // Add some space between the back icon and the title
@@ -181,9 +185,11 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#fff',
-    fontSize: 28,
+    fontSize: 25,
     fontWeight: 'bold',
     alignItems: "center",
+    paddingRight: 20,
+    
   },
   contentSection: {
     flex: 1,
