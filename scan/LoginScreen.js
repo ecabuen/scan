@@ -15,7 +15,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      const response = await axios.post('http://192.168.0.115:3000/login', {
+      const response = await axios.post('http://192.168.254.125:3000/login', {
         email,
         password,
       });
@@ -30,6 +30,7 @@ export default function LoginScreen({ navigation }) {
         });
         setPassword(''); // Clear password field
       }
+      
     } catch (error) {
       if (error.response && error.response.status === 401) {
         Alert.alert('Login failed', 'Wrong username or password');
