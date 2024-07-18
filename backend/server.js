@@ -7,8 +7,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-
-
 const app = express();
 app.use(express.json());
 const port = 3000;
@@ -194,7 +192,31 @@ app.put('/update-student/:studentID', (req, res) => {
   });
 });
 
+// Fetch students and their attendance by teacherId
+app.get('/students/:teacherId', (req, res) => {
+  const { teacherId } = req.params;
+  console.log('Fetching students for teacher ID:', teacherId); // Log teacher ID
 
+  const sql = `
+    SELECT s.*, a.status AS attendance_status
+    FROM student s
+    LEFT JOIN attendance a ON s.id = a.student_id
+    WHERE s.teacher_id = ?
+  `;
+
+  db.query(sql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+    
+    console.log('Query results:', results); // Log query results
+    res.status(200).json({
+      status: 'success',
+      data: results,
+    });
+  });
+});
 
 
 app.listen(port, () => {
