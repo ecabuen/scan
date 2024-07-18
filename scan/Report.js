@@ -1,56 +1,45 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Image, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
+import { FontAwesome5 } from '@expo/vector-icons';
+import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FontAwesome5 } from '@expo/vector-icons'; // Import FontAwesome5 for user-alt icon
 
-const data = [
-  {
-    name: 'Arvin Kelly Butiong',
-    attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
-  },
-  {
-    name: 'Raica Kathleen Perez',
-    attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-  },
-  {
-    name: 'Eloisa Cabuen',
-    attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-  },
-  {
-    name: 'Jennie Kim',
-    attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
-  },
-  {
-    name: 'Kang Haerin',
-    attendance: ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-  },
-  {
-    name: 'Hanni Pham',
-    attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
-  },
-  {
-    name: 'Kim Minji',
-    attendance: ['A', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'P', 'P', 'A', 'A', 'A', 'A', 'A', 'A', 'P', 'A', 'P', 'P', 'A', 'P'],
-  }
-];
-
-export default function HomeScreen() {
+export default function Report() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { id: teacherId } = route.params || {};
+
+  const [students, setStudents] = useState([]);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [filteredData, setFilteredData] = useState(data);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [teacherId]);
+
+  // Adjusted fetchStudents function to fetch attendance status
+  const fetchStudents = async () => {
+    try {
+      const response = await axios.get(`http://192.168.254.125:3000/students/${teacherId}`, {
+        timeout: 10000,
+      });
+      const fetchedStudents = response.data.data.map(student => ({
+        ...student,
+        attendanceStatus: student.status === 'Present' ? 'Present' : 'Absent', // Assuming 'status' holds 'Present' or 'Absent'
+      }));
+      setStudents(fetchedStudents);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    }
+  };
 
   const onChangeStartDate = (event, selectedDate) => {
     setShowStartDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setStartDate(selectedDate);
-      filterDataByDate(selectedDate, endDate);
     }
   };
 
@@ -58,35 +47,20 @@ export default function HomeScreen() {
     setShowEndDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setEndDate(selectedDate);
-      filterDataByDate(startDate, selectedDate);
     }
   };
 
-  const generateCSV = async () => {
-    const headers = ['Name', ...Array.from({ length: filteredData[0].attendance.length }, (_, i) => `Day ${i + 1}`)];
-    const rows = filteredData.map(item => [item.name, ...item.attendance]);
-    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-
-    const path = FileSystem.documentDirectory + 'AttendanceReport.csv';
-    await FileSystem.writeAsStringAsync(path, csvContent);
-
-    await Sharing.shareAsync(path);
+  const openStartDatePicker = () => {
+    setShowStartDatePicker(true);
   };
 
-  const filterDataByDate = (start, end) => {
-    const startIndex = start.getDate() - 1;
-    const endIndex = end.getDate() - 1;
-
-    const filtered = data.map(student => ({
-      name: student.name,
-      attendance: student.attendance.slice(startIndex, endIndex + 1),
-    }));
-
-    setFilteredData(filtered);
+  const openEndDatePicker = () => {
+    setShowEndDatePicker(true);
   };
 
   return (
     <View style={styles.container}>
+      {/* Header Section */}
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <FontAwesome5 name="arrow-left" size={24} color="#FFF" />
@@ -98,66 +72,64 @@ export default function HomeScreen() {
 
       {/* Content Section */}
       <View style={styles.contentSection}>
-        <ScrollView style={styles.scrollView}>
-          {filteredData.map((student, idx) => (
-            <View key={idx} style={styles.studentContainer}>
-              <FontAwesome5
-                name="user-alt"
-                size={45}
-                color="#A32926"
-                style={styles.profilePic}
-              />
-              <View style={styles.studentInfo}>
-                <Text style={styles.studentName}>{student.name}</Text>
-                <Text style={styles.studentStatus}>
-                  {student.attendance[student.attendance.length - 1] === 'A' ? 'Absent' : 'Present'}
-                </Text>
-              </View>
-              <FontAwesome5
-                name={student.attendance[student.attendance.length - 1] === 'A' ? 'times' : 'check'}
-                size={24}
-                color={student.attendance[student.attendance.length - 1] === 'A' ? 'red' : 'green'}
-                style={styles.statusIcon}
-              />
-            </View>
-          ))}
-        </ScrollView>
-
-        <View style={styles.dateFilterContainer}>
-          <View style={styles.datePickerContainer}>
-            <Text style={styles.datePickerLabel}>Start Date:</Text>
-            <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.datePickerButton}>
-              <Text style={styles.datePickerButtonText}>{startDate.toDateString()}</Text>
-            </TouchableOpacity>
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                display="default"
-                onChange={onChangeStartDate}
-              />
-            )}
-          </View>
-          <View style={styles.datePickerContainer}>
-            <Text style={styles.datePickerLabel}>End Date:</Text>
-            <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.datePickerButton}>
-              <Text style={styles.datePickerButtonText}>{endDate.toDateString()}</Text>
-            </TouchableOpacity>
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={endDate}
-                mode="date"
-                display="default"
-                onChange={onChangeEndDate}
-              />
-            )}
-          </View>
+      <ScrollView style={styles.scrollView}>
+  {students.map((student, idx) => (
+    <View key={idx} style={styles.studentContainer}>
+      <FontAwesome5
+        name="user-alt"
+        size={45}
+        color="#A32926"
+        style={styles.profilePic}
+      />
+      <View style={styles.studentInfo}>
+        <Text style={styles.studentName}>{student.name}</Text>
+        <View style={styles.statusContainer}>
+          <FontAwesome5
+            name={student.attendanceStatus === 'Present' ? 'check' : 'times'}
+            size={24}
+            color={student.attendanceStatus === 'Present' ? 'green' : 'red'}
+            style={styles.statusIcon}
+          />
+          <Text style={[styles.studentStatus, { color: student.attendanceStatus === 'Present' ? 'green' : 'red' }]}>
+            {student.attendanceStatus}
+          </Text>
         </View>
-
-        <TouchableOpacity onPress={generateCSV} style={styles.button}>
-          <Text style={styles.buttonText}>Export to CSV</Text>
-        </TouchableOpacity>
       </View>
+    </View>
+  ))}
+</ScrollView>
+
+      </View>
+
+      {/* Date Pickers and Export Button Section */}
+      <View style={styles.dateFilterContainer}>
+        <TouchableOpacity style={styles.datePickerButton} onPress={openStartDatePicker}>
+          <Text style={styles.datePickerButtonText}>{startDate.toDateString()}</Text>
+        </TouchableOpacity>
+        {showStartDatePicker && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={onChangeStartDate}
+          />
+        )}
+        <TouchableOpacity style={styles.datePickerButton} onPress={openEndDatePicker}>
+          <Text style={styles.datePickerButtonText}>{endDate.toDateString()}</Text>
+        </TouchableOpacity>
+        {showEndDatePicker && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={onChangeEndDate}
+          />
+        )}
+      </View>
+
+      <TouchableOpacity style={styles.exportButton} onPress={() => {}}>
+        <Text style={styles.exportButtonText}>Export to CSV</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -170,14 +142,13 @@ const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: '#A32926',
     height: 110,
-    flexDirection: 'row', // Added to align items horizontally
+    flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 40,
-    
-    paddingHorizontal: 15, // Added for spacing
+    paddingHorizontal: 15,
   },
   backButton: {
-    marginRight: 10, // Add some space between the back icon and the title
+    marginRight: 10,
   },
   header: {
     flex: 1,
@@ -187,9 +158,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 25,
     fontWeight: 'bold',
-    alignItems: "center",
-    paddingRight: 20,
-    
   },
   contentSection: {
     flex: 1,
@@ -232,36 +200,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-  statusIcon: {
-    marginLeft: 10,
-  },
-  button: {
-    marginTop: 20,
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    backgroundColor: '#A32926',
-    borderRadius: 5,
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   dateFilterContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-evenly',
     alignItems: 'center',
     marginBottom: 20,
-    justifyContent: 'center',
-    width: '100%',
-  },
-  datePickerContainer: {
-    marginHorizontal: 10,
-  },
-  datePickerLabel: {
-    marginBottom: 5,
-    color: '#333',
-    fontSize: 16,
   },
   datePickerButton: {
     backgroundColor: '#fff',
@@ -272,7 +215,26 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   datePickerButtonText: {
-    color: '#333',
     fontSize: 16,
+    color: '#333',
   },
+  exportButton: {
+    backgroundColor: '#A32926',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    elevation: 3,
+    alignItems: 'center',
+  },
+  exportButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  statusContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+  statusIcon: {
+  marginRight: 5,
+},
 });
