@@ -72,7 +72,9 @@ export default function ProfileScreen() {
     });
   };
   const handleReport = () => {
-    navigation.navigate('Report');
+    navigation.navigate('Report', {
+      id
+    });
   };
 
   return (
