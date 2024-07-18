@@ -8,11 +8,12 @@ import * as FileSystem from 'expo-file-system';
 export default function AddStudentScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
-  const [gmail, setGmail] = useState(''); //add
+  const [gmail, setGmail] = useState('');
   const [profilePic, setProfilePic] = useState(null);
   const route = useRoute();
-  const { firstname, lastname,email,id } = route.params || {};
+  const { firstname, lastname, email, id } = route.params || {};
   console.log('Route params:', { firstname, lastname, email, id });
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -26,24 +27,25 @@ export default function AddStudentScreen() {
     });
 
     if (!result.canceled) {
-      setProfilePic(result.assets[0].uri); // updated to use the URI from the result
+      setProfilePic(result.assets[0].uri);
     }
   };
 
   const uploadImage = async (uri, name, id) => {
     const formData = new FormData();
-    const filename = `${name}.jpg`; 
+    const filename = `${name}.jpg`;
 
     formData.append('name', name);
-    formData.append('gmail', gmail);  //add
+    formData.append('gmail', gmail);
     formData.append('profilePic', {
       uri,
       name: filename,
       type: 'image/jpeg',
     });
-    formData.append('id', id); 
+    formData.append('id', id);
+
     try {
-      const response = await fetch('http://192.168.254.103:3000/add-student', {
+      const response = await fetch('http://192.168.0.253:3000/add-student', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -55,9 +57,9 @@ export default function AddStudentScreen() {
         const data = await response.json();
         Alert.alert('Success', 'Student registered successfully');
         console.log('Student registered:', data);
-        setProfilePic(null); //add
-        setGmail(null); //add
-        setName(null); //add
+        setProfilePic(null);
+        setGmail(null);
+        setName(null);
       } else {
         const errorData = await response.text();
         console.error('Error response:', errorData);
@@ -70,11 +72,11 @@ export default function AddStudentScreen() {
   };
 
   const handleRegister = () => {
-    if (!profilePic) {
-      Alert.alert('Error', 'Please select a profile picture.');
+    if (!profilePic || !name || !gmail) {
+      Alert.alert('Error', 'Please fill in all fields and select a profile picture.');
       return;
     }
-    uploadImage(profilePic, name, id, gmail); //add
+    uploadImage(profilePic, name, id);
   };
 
   return (
@@ -108,12 +110,12 @@ export default function AddStudentScreen() {
           value={name}
           onChangeText={setName}
         />
-        <TextInput //add
-          style={styles.input} //add
-          placeholder="Enter gmail"  //add
-          value={gmail} //add
-          onChangeText={setGmail} //add
-        /> 
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Gmail"
+          value={gmail}
+          onChangeText={setGmail}
+        />
         <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
