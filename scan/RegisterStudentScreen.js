@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
@@ -13,7 +13,7 @@ export default function RegisterStudent() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.103:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.0.220:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
@@ -51,6 +51,45 @@ export default function RegisterStudent() {
     });
   };
 
+  const handleDelete = (studentID) => {
+    Alert.prompt(
+      "Enter Password",
+      "Please enter your password to confirm deletion:",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: async (password) => {
+            try {
+              const response = await axios.post('http://192.168.0.220:3000/verify-password-and-delete', {
+                userId: id, // Assuming you have the userId available in the context or state
+                password,
+                studentID
+              });
+  
+              if (response.status === 200) {
+                fetchStudents(); // Refresh the student list
+              } else if (response.status === 401) {
+                Alert.alert("Error", "Incorrect password. Please try again.");
+              } else {
+                Alert.alert("Error", response.data.message);
+              }
+            } catch (error) {
+              console.error('Error deleting student:', error.message);
+              // Handle error deleting student
+              Alert.alert("Error", "Failed to delete student. Please try again.");
+            }
+          }
+        }
+      ],
+      "secure-text" // Use secure-text to hide the password input
+    );
+  };  
+  
+
   const filteredStudents = students.filter(student => {
     return student.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
@@ -82,7 +121,7 @@ export default function RegisterStudent() {
             <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail)}>
               <Icon name="edit" size={20} color="#A32926" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton}>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
               <Icon name="trash" size={20} color="#A32926" />
             </TouchableOpacity>
           </View>
