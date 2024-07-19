@@ -218,6 +218,40 @@ app.get('/students/:teacherId', (req, res) => {
   });
 });
 
+// Delete student endpoint
+// Verify password and delete student endpoint
+app.post('/verify-password-and-delete', (req, res) => {
+  const { userId, password, studentID } = req.body;
+
+  // Fetch the user's hashed password from the database
+  const sql = 'SELECT password FROM users WHERE id = ?';
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Server error' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    const user = results[0];
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ status: 'error', message: 'Incorrect password' });
+    }
+
+    // Delete the student if the password is correct
+    const deleteSql = 'DELETE FROM student WHERE studentID = ?';
+    db.query(deleteSql, [studentID], (err, result) => {
+      if (err) {
+        console.error('SQL error:', err);
+        return res.status(500).json({ status: 'error', message: 'Failed to delete student' });
+      }
+      res.status(200).json({ status: 'success', message: 'Student deleted successfully' });
+    });
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
