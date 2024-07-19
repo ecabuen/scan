@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, Image} from 'react-native';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
@@ -13,7 +13,7 @@ export default function RegisterStudent() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.0.220:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.0.7:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
@@ -43,13 +43,15 @@ export default function RegisterStudent() {
     });
   };
 
-  const handleEdit = (studentName, studentID, gmail) => {
+  const handleEdit = (studentName, studentID, gmail, profilePic) => {
     navigation.navigate('EditStudentScreen', {
       studentName,
       studentID,
-      studentGmail: gmail
+      studentGmail: gmail,
+      studentProfilePic: profilePic,  
     });
   };
+  
 
   const handleDelete = (studentID) => {
     Alert.prompt(
@@ -64,7 +66,7 @@ export default function RegisterStudent() {
           text: "OK",
           onPress: async (password) => {
             try {
-              const response = await axios.post('http://192.168.0.220:3000/verify-password-and-delete', {
+              const response = await axios.post('http://192.168.0.7:3000/verify-password-and-delete', {
                 userId: id, // Assuming you have the userId available in the context or state
                 password,
                 studentID
@@ -95,6 +97,19 @@ export default function RegisterStudent() {
     return student.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
+
+  const getImageSource = (profilePic) => {
+    try {
+      const images = require.context('./studentimages', false, /\.jpg$/);
+      const imageName = `./${profilePic}`;
+      return images(imageName);
+    } catch (error) {
+      console.warn(`Image not found: ${profilePic}. Using default image.`);
+      return require('./images/empty.jpg');
+    }
+  };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -114,20 +129,23 @@ export default function RegisterStudent() {
         value={searchTerm}
         onChangeText={text => setSearchTerm(text)}
       />
-      <ScrollView contentContainerStyle={styles.studentContainer}>
-        {filteredStudents.map((student, index) => (
-          <View key={index} style={styles.studentCard}>
-            <Icon name="user-alt" size={20} color="#A32926" style={styles.icon} />
-            <Text style={styles.name}>{student.name}</Text>
-            <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail)}>
-              <Icon name="edit" size={20} color="#A32926" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
+<ScrollView contentContainerStyle={styles.studentContainer}>
+  {filteredStudents.map((student, index) => (
+    <View key={index} style={styles.studentCard}>
+      <Image
+        source={getImageSource(student.profile_pic)}
+        style={styles.studentImage}
+      />
+      <Text style={styles.name}>{student.name}</Text>
+      <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail, student.profile_pic)}>
+        <Icon name="edit" size={20} color="#A32926" />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
               <Icon name="trash" size={20} color="#A32926" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
+      </TouchableOpacity>
+    </View>
+  ))}
+</ScrollView>
     </View>
   );
 }
@@ -195,7 +213,10 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  icon: {
+  studentImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     marginRight: 10,
   },
   name: {
