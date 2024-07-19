@@ -72,23 +72,24 @@ export default function RegisterStudent() {
   
               if (response.status === 200) {
                 fetchStudents(); // Refresh the student list
-              } else if (response.status === 401) {
-                Alert.alert("Error", "Incorrect password. Please try again.");
               } else {
                 Alert.alert("Error", response.data.message);
               }
             } catch (error) {
-              console.error('Error deleting student:', error.message);
-              // Handle error deleting student
-              Alert.alert("Error", "Failed to delete student. Please try again.");
+              if (error.response && error.response.status === 401) {
+                Alert.alert("Error", "Incorrect password. Please try again.");
+              } else {
+                console.error('Error deleting student:', error.message);
+                // Handle other errors deleting student
+                Alert.alert("Error", "Failed to delete student. Please try again.");
+              }
             }
           }
         }
       ],
       "secure-text" // Use secure-text to hide the password input
     );
-  };  
-  
+  };
 
   const filteredStudents = students.filter(student => {
     return student.name.toLowerCase().includes(searchTerm.toLowerCase());
