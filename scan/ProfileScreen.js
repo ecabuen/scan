@@ -77,11 +77,22 @@ export default function ProfileScreen() {
     });
   };
 
+  const getImageSource = () => {
+    try {
+      const images = require.context('./teacherimages', false, /\.jpg$/);
+      const imageName = `./${firstname}-${lastname}.jpg`;
+      return images(imageName);
+    } catch (error) {
+      console.warn(`Image not found: ${firstname}-${lastname}.jpg. Using default image.`);
+      return userIcon; 
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
+<       View style={styles.headerContainer}>
         <View style={styles.header}>
-          <Image source={require('./images/user-icon.png')} style={styles.logo} />
+          <Image source={getImageSource()} style={styles.logo} />
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>{firstname} {lastname}</Text>
             <Text style={styles.headerDate}>{email}</Text>
@@ -147,7 +158,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
-    borderRadius: 25,
+    borderRadius: 50,
     marginLeft: 20,
   },
   headerTextContainer: {
