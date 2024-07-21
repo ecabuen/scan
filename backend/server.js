@@ -95,14 +95,13 @@ const teacherImageStorage = multer.diskStorage({
 
 const uploadTeacherImage = multer({ storage: teacherImageStorage }).single('profilePic');
 
-// Update profile endpoint
 app.put('/update-profile/:id', uploadTeacherImage, (req, res) => {
   const { id } = req.params;
   const { firstname, lastname, email } = req.body;
-  const profilePic = req.file ? req.file.filename : null;
+  const profilePicFilename = req.file ? req.file.filename : req.body.profilePic;
 
   const sql = 'UPDATE users SET firstname = ?, lastname = ?, email = ?, profile_pic = ? WHERE id = ?';
-  const params = [firstname, lastname, email, profilePic, id];
+  const params = [firstname, lastname, email, profilePicFilename, id];
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -111,10 +110,13 @@ app.put('/update-profile/:id', uploadTeacherImage, (req, res) => {
     }
     res.status(200).json({
       message: 'Profile updated successfully',
-      data: { id, firstname, lastname, email, profilePic },
+      data: { id, firstname, lastname, email, profilePic: profilePicFilename },
     });
   });
 });
+
+
+
 //Add student
 
 const storage = multer.diskStorage({
@@ -170,13 +172,36 @@ app.get('/students/:id', (req, res) => {
   });
 });
 
+
 // update student
 app.put('/update-student/:studentID', (req, res) => {
-  const studentID = req.params.studentID; 
-  const { name,gmail } = req.body; //add
+  const studentID = req.params.studentID;
+  const { name, gmail, profilePic } = req.body;
 
-  const sql = 'UPDATE student SET name = ?, gmail = ? WHERE studentID = ?'; // Corrected to use 'studentID'
-  const params = [name,gmail, studentID]; //add
+  // Build SQL query dynamically based on which fields are provided
+  let sql = 'UPDATE student SET ';
+  const params = [];
+  const fields = [];
+
+  if (name) {
+    fields.push('name = ?');
+    params.push(name);
+  }
+  if (gmail) {
+    fields.push('gmail = ?');
+    params.push(gmail);
+  }
+  if (profilePic) {
+    fields.push('profile_pic = ?');
+    params.push(profilePic);
+  }
+  
+  if (fields.length === 0) {
+    return res.status(400).json({ status: 'error', message: 'No fields to update' });
+  }
+
+  sql += fields.join(', ') + ' WHERE studentID = ?';
+  params.push(studentID);
 
   db.query(sql, params, (err, result) => {
     if (err) {
@@ -184,11 +209,30 @@ app.put('/update-student/:studentID', (req, res) => {
       return res.status(500).json({ status: 'error', message: 'Failed to update student' });
     }
 
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ status: 'error', message: 'Student not found or no changes made' });
+    }
+
     res.status(200).json({
       status: 'success',
-      message: 'Student information updated successfully', //add
-      data: { id: studentID, name, gmail } //add
+      message: 'Student information updated successfully',
+      data: { id: studentID, name, gmail, profilePic }
     });
+  });
+});
+
+
+
+
+
+app.post('/upload-image', upload.single('profilePic'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ status: 'error', message: 'No file uploaded' });
+  }
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Image uploaded successfully'
   });
 });
 
