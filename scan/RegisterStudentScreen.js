@@ -1,29 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, Image} from 'react-native';
-import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Alert, Image, Platform } from 'react-native';
+import Dialog from 'react-native-dialog';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
-
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
+//install react-native-dialog
 export default function RegisterStudent() {
   const navigation = useNavigation();
   const route = useRoute();
   const { firstname, lastname, email, id } = route.params || {};
   const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [deleteStudentId, setDeleteStudentId] = useState(null);
+  const [password, setPassword] = useState('');
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.0.7:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.254.103:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching students:', error.message);
-      // Handle error fetching students
     }
   };
 
-  // Fetch students initially and on focus
   useFocusEffect(
     useCallback(() => {
       fetchStudents();
@@ -48,55 +50,71 @@ export default function RegisterStudent() {
       studentName,
       studentID,
       studentGmail: gmail,
-      studentProfilePic: profilePic,  
+      studentProfilePic: profilePic,
     });
   };
-  
 
   const handleDelete = (studentID) => {
-    Alert.prompt(
-      "Enter Password",
-      "Please enter your password to confirm deletion:",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "OK",
-          onPress: async (password) => {
-            try {
-              const response = await axios.post('http://192.168.0.7:3000/verify-password-and-delete', {
-                userId: id, // Assuming you have the userId available in the context or state
-                password,
-                studentID
-              });
-  
-              if (response.status === 200) {
-                fetchStudents(); // Refresh the student list
-              } else {
-                Alert.alert("Error", response.data.message);
-              }
-            } catch (error) {
-              if (error.response && error.response.status === 401) {
-                Alert.alert("Error", "Incorrect password. Please try again.");
-              } else {
-                console.error('Error deleting student:', error.message);
-                // Handle other errors deleting student
-                Alert.alert("Error", "Failed to delete student. Please try again.");
-              }
+    if (Platform.OS === 'android') {
+      setDeleteStudentId(studentID);
+      setDialogVisible(true);
+    } else {
+      Alert.prompt(
+        "Enter Password",
+        "Please enter your password to confirm deletion:",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "OK",
+            onPress: async (password) => {
+              await deleteStudent(studentID, password);
             }
           }
-        }
-      ],
-      "secure-text" // Use secure-text to hide the password input
-    );
+        ],
+        "secure-text"
+      );
+    }
+  };
+
+  const deleteStudent = async (studentID, password) => {
+    try {
+      const response = await axios.post('http://192.168.254.103:3000/verify-password-and-delete', {
+        userId: id,
+        password,
+        studentID
+      });
+
+      if (response.status === 200) {
+        fetchStudents();
+        Alert.alert("Success", "Deleted successfully");
+      } else {
+        Alert.alert("Error", response.data.message);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        Alert.alert("Error", "Incorrect password. Please try again.");
+      } else {
+        console.error('Error deleting student:', error.message);
+        Alert.alert("Error", "Failed to delete student. Please try again.");
+      }
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteStudentId !== null) {
+      await deleteStudent(deleteStudentId, password);
+      setDialogVisible(false);
+      setPassword('');
+      setDeleteStudentId(null);
+    }
   };
 
   const filteredStudents = students.filter(student => {
     return student.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
-
 
   const getImageSource = (profilePic) => {
     try {
@@ -108,7 +126,6 @@ export default function RegisterStudent() {
       return require('./images/empty.jpg');
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -129,23 +146,35 @@ export default function RegisterStudent() {
         value={searchTerm}
         onChangeText={text => setSearchTerm(text)}
       />
-<ScrollView contentContainerStyle={styles.studentContainer}>
-  {filteredStudents.map((student, index) => (
-    <View key={index} style={styles.studentCard}>
-      <Image
-        source={getImageSource(student.profile_pic)}
-        style={styles.studentImage}
-      />
-      <Text style={styles.name}>{student.name}</Text>
-      <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail, student.profile_pic)}>
-        <Icon name="edit" size={20} color="#A32926" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
+      <ScrollView contentContainerStyle={styles.studentContainer}>
+        {filteredStudents.map((student, index) => (
+          <View key={index} style={styles.studentCard}>
+            <Image
+              source={getImageSource(student.profile_pic)}
+              style={styles.studentImage}
+            />
+            <Text style={styles.name}>{student.name}</Text>
+            <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail, student.profile_pic)}>
+              <Icon name="edit" size={20} color="#A32926" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
               <Icon name="trash" size={20} color="#A32926" />
-      </TouchableOpacity>
-    </View>
-  ))}
-</ScrollView>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      <Dialog.Container visible={dialogVisible}>
+        <Dialog.Title>Enter Password</Dialog.Title>
+        <Dialog.Input
+          secureTextEntry
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Dialog.Button label="Cancel" onPress={() => setDialogVisible(false)} />
+        <Dialog.Button label="OK" onPress={handleConfirmDelete} />
+      </Dialog.Container>
     </View>
   );
 }
