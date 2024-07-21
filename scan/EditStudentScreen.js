@@ -1,51 +1,118 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function EditStudentScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { studentName, studentID, studentGmail } = route.params || {}; // add
-  // Receive studentName from navigation params
-  const [name, setName] = useState(studentName); // State to manage the editable name
-  const [gmail, setGmail] = useState(studentGmail); //add
+  const { studentName, studentID, studentGmail, studentProfilePic } = route.params || {};
+  const [name, setName] = useState(studentName || '');
+  const [gmail, setGmail] = useState(studentGmail || '');
+  const [profilePic, setProfilePic] = useState(studentProfilePic || '');
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const handleUpload = () => {
-    // Handle upload action here
-    alert("Upload action triggered!");
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfilePic(result.assets[0].uri);
+    }
   };
 
-  const handleTakePhoto = () => {
-    // Handle take photo action here
-    alert("Take photo action triggered!");
-  };
+  const handleUpdate = async () => {
+    if (!name || !gmail) {
+      Alert.alert('Error', 'Field must not be empty');
+      return;
+    }
 
-  const handleUpdate = () => {
-    fetch(`http://192.168.254.103:3000/update-student/${studentID}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, gmail }), //add
-    })
-    .then(response => {
+    const updateData = {};
+    updateData.name = name;
+    updateData.gmail = gmail;
+
+    if (profilePic && profilePic !== studentProfilePic) {
+      const formData = new FormData();
+      const filename = `${name}.jpg`;
+
+      formData.append('name', name);
+      formData.append('gmail', gmail);
+      formData.append('profilePic', {
+        uri: profilePic,
+        name: filename,
+        type: 'image/jpeg',
+      });
+
+      try {
+        const imageResponse = await fetch('http://192.168.254.103:3000/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          body: formData,
+        });
+
+        if (!imageResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const imageData = await imageResponse.json();
+        if (imageData.status === 'success') {
+          updateData.profilePic = filename;
+        }
+      } catch (error) {
+        console.error('Image upload failed:', error.message);
+        alert('Failed to upload image');
+        return;
+      }
+    } else {
+      updateData.profilePic = studentProfilePic;
+    }
+
+    try {
+      const response = await fetch(`http://192.168.254.103:3000/update-student/${studentID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      });
+
       if (!response.ok) {
         throw new Error('Failed to update student');
       }
-      alert(`Student information updated successfully`);  //add
+
+      const data = await response.json();
+      alert(data.message);
       navigation.goBack();
-    })
-    .catch(error => {
+    } catch (error) {
       console.error('Update failed:', error.message);
       alert('Failed to update student');
-    });
+    }
   };
-  
+
+  const getImageSource = (profilePic) => {
+    if (profilePic.startsWith('http')) {
+      return { uri: profilePic };
+    } else {
+      try {
+        const images = require.context('./studentimages', false, /\.jpg$/);
+        const imageName = `./${profilePic}`;
+        return images(imageName);
+      } catch (error) {
+        console.warn(`Image not found: ${profilePic}. Using default image.`);
+        return require('./images/empty.jpg');
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -61,32 +128,30 @@ export default function EditStudentScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.uploadBox}>
           <View style={styles.profilePictureContainer}>
-            <Icon name="user-alt" size={100} color="#A32926" />
+            <Image
+              source={getImageSource(profilePic)}
+              style={styles.profilePicture}
+            />
           </View>
           <Text style={styles.name}>{name}</Text>
-          <TouchableOpacity onPress={handleUpload} style={styles.uploadButton}>
+          <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
             <Text style={styles.uploadText}>Upload Image</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleTakePhoto} style={styles.uploadButton}>
-            <Text style={styles.uploadText}>Take a Photo</Text>
-          </TouchableOpacity>
         </View>
-        
         <TextInput
           style={styles.input}
           placeholder="Name"
           value={name}
           onChangeText={text => setName(text)}
         />
-                
-        <TextInput //add
-          style={styles.input} //add
-          placeholder="Gmail" //add
-          value={gmail} //add
-          onChangeText={text => setGmail(text)} //add
+        <TextInput
+          style={styles.input}
+          placeholder="Gmail"
+          value={gmail}
+          onChangeText={text => setGmail(text)}
         />
         <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
-          <Text style={styles.updateButtonText} >Update</Text>
+          <Text style={styles.updateButtonText}>Update</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -113,7 +178,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   headerButtonPlaceholder: {
-    width: 40, 
+    width: 40,
   },
   headerTitle: {
     fontSize: 24,
@@ -122,23 +187,28 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
-    alignItems: 'center', // Center the content horizontally
+    alignItems: 'center',
   },
   uploadBox: {
     marginBottom: 20,
-    alignItems: 'center', // Center the children horizontally
-    width: '100%', 
+    alignItems: 'center',
+    width: '100%',
   },
   profilePictureContainer: {
     width: 200,
     height: 200,
-    borderRadius: 150, // Make sure the radius is half of the width/height to make it a circle
+    borderRadius: 100,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     marginBottom: 20,
+  },
+  profilePicture: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
   },
   name: {
     fontSize: 27,
@@ -173,14 +243,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
-    width: '100%', // Make sure the input takes the full width of the container
+    width: '100%',
   },
   updateButton: {
     backgroundColor: '#A32926',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
-    width: '100%', // Make sure the button takes the full width of the container
+    width: '100%',
   },
   updateButtonText: {
     fontSize: 16,
