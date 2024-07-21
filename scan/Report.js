@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform,Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import axios from 'axios';
@@ -23,7 +23,7 @@ export default function Report() {
   // Adjusted fetchStudents function to fetch attendance status
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.125:3000/students/${teacherId}`, {
+      const response = await axios.get(`http://192.168.254.103:3000/students/${teacherId}`, {
         timeout: 10000,
       });
       const fetchedStudents = response.data.data.map(student => ({
@@ -58,6 +58,17 @@ export default function Report() {
     setShowEndDatePicker(true);
   };
 
+  const getImageSource = (profilePic) => {
+    try {
+      const images = require.context('./studentimages', false, /\.jpg$/);
+      const imageName = `./${profilePic}`;
+      return images(imageName);
+    } catch (error) {
+      console.warn(`Image not found: ${profilePic}. Using default image.`);
+      return require('./images/empty.jpg');
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header Section */}
@@ -75,10 +86,8 @@ export default function Report() {
       <ScrollView style={styles.scrollView}>
   {students.map((student, idx) => (
     <View key={idx} style={styles.studentContainer}>
-      <FontAwesome5
-        name="user-alt"
-        size={45}
-        color="#A32926"
+      <Image
+        source={getImageSource(student.profile_pic)}
         style={styles.profilePic}
       />
       <View style={styles.studentInfo}>
