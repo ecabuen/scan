@@ -30,20 +30,24 @@ export default function ProfileDetails() {
 
   const uploadImage = async (uri, id) => {
     const formData = new FormData();
-    const filename = `${firstName}-${lastName}.jpg`;
-  
+    
     formData.append('firstname', firstName);
     formData.append('lastname', lastName);
     formData.append('email', userEmail);
-    formData.append('profilePic', {
-      uri,
-      name: filename,
-      type: 'image/jpeg',
-    });
+  
+    if (uri) {
+      const filename = `${firstName}-${lastName}.jpg`;
+      formData.append('profilePic', {
+        uri,
+        name: filename,
+        type: 'image/jpeg',
+      });
+    }
+    
     formData.append('id', id);
   
     try {
-      const response = await axios.put(`http://192.168.0.100:3000/update-profile/${id}`, formData, {
+      const response = await axios.put(`http://192.168.254.103:3000/update-profile/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -63,14 +67,21 @@ export default function ProfileDetails() {
     }
   };
   
-
   const handleUpdate = () => {
-    if (!profileImage) {
-      Alert.alert('Error', 'Please select a profile picture.');
-      return;
-    }
     uploadImage(profileImage, id);
   };
+  
+  const getImageSource = () => {
+    try {
+      const images = require.context('./teacherimages', false, /\.jpg$/);
+      const imageName = `./${firstname}-${lastname}.jpg`;
+      return images(imageName);
+    } catch (error) {
+      console.warn(`Image not found: ${firstname}-${lastname}.jpg. Using default image.`);
+      return userIcon; 
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -89,7 +100,8 @@ export default function ProfileDetails() {
             {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
             ) : (
-              <Image source={require("./images/empty.jpg")} style={styles.profileImage} />
+            
+              <Image source={getImageSource()} style={styles.profileImage}/>
             )}
             <View style={styles.editIconContainer}>
               <Icon name="edit" size={20} color="#FFF" />
