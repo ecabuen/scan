@@ -9,24 +9,24 @@ export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [emailInvalid, setEmailInvalid] = useState(false);
+  const [passwordInvalid, setPasswordInvalid] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   const handleRegister = async () => {
     // Input validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+    setEmailInvalid(!emailRegex.test(email));
+    setPasswordInvalid(!passwordRegex.test(password));
+
     if (!firstname || !lastname || !email || !password) {
       Alert.alert('Registration failed', 'All fields are required');
       return;
     }
 
-    if (!emailRegex.test(email)) {
-      Alert.alert('Registration failed', 'Invalid email format');
-      return;
-    }
-
-    if (!passwordRegex.test(password)) {
-      Alert.alert('Registration failed', 'Password must be at least 8 characters long and include uppercase, lowercase, number, and symbol');
+    if (!emailRegex.test(email) || !passwordRegex.test(password)) {
       return;
     }
 
@@ -44,7 +44,11 @@ export default function RegisterScreen({ navigation }) {
       }
     } catch (error) {
       if (error.response) {
-        Alert.alert('Registration failed', error.response.data);
+        if (error.response.status === 409) {
+          setEmailExists(true);
+        } else {
+          Alert.alert('Registration failed', error.response.data);
+        }
       } else if (error.request) {
         Alert.alert('Registration failed', 'No response from server');
       } else {
@@ -83,7 +87,7 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setLastName}
           />
         </View>
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, (emailInvalid || emailExists) && styles.inputError]}>
           <FontAwesome name="envelope" size={20} color="#A32926" style={styles.icon} />
           <TextInput
             style={styles.input}
@@ -93,7 +97,13 @@ export default function RegisterScreen({ navigation }) {
             onChangeText={setEmail}
           />
         </View>
-        <View style={styles.inputContainer}>
+        {emailInvalid && (
+          <Text style={styles.errorText}>Invalid email format</Text>
+        )}
+        {emailExists && (
+          <Text style={styles.errorText}>Email already exists</Text>
+        )}
+        <View style={[styles.inputContainer, passwordInvalid && styles.inputError]}>
           <FontAwesome name="lock" size={20} color="#A32926" style={styles.icon} />
           <TextInput
             style={styles.input}
@@ -107,6 +117,9 @@ export default function RegisterScreen({ navigation }) {
             <FontAwesome name={showPassword ? "eye-slash" : "eye"} size={20} color="#A32926" />
           </TouchableOpacity>
         </View>
+        {passwordInvalid && (
+          <Text style={styles.errorText}>Password must be at least 8 characters long and include uppercase, lowercase, number, and symbol</Text>
+        )}
         <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
@@ -175,6 +188,15 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+  },
+  inputError: {
+    borderBottomColor: 'red',
+    borderBottomWidth: 1,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: -15,
+    marginBottom: 10,
   },
   registerButton: {
     width: "100%",
