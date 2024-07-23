@@ -10,7 +10,7 @@ export default function EditStudentScreen() {
   const { studentName, studentID, studentGmail, gender, studentProfilePic } = route.params || {};
   const [name, setName] = useState(studentName || '');
   const [gmail, setGmail] = useState(studentGmail || '');
-  const [studentGender, setGender] = useState(gender ||'');
+  const [studentGender, setGender] = useState(gender || '');
   const [profilePic, setProfilePic] = useState(studentProfilePic || '');
 
   const handleBack = () => {
@@ -26,7 +26,7 @@ export default function EditStudentScreen() {
     });
 
     if (!result.canceled) {
-      setProfilePic(result.assets[0].uri);
+      setProfilePic(result.assets[0].uri); // Update the profilePic state with the new image URI
     }
   };
 
@@ -55,7 +55,7 @@ export default function EditStudentScreen() {
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.104:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.113:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -81,7 +81,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.104:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.113:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function EditStudentScreen() {
     }
   };
 
-  const getImageSource = (profilePic) => {
+  const getImageSource = () => {
     if (profilePic.startsWith('http')) {
       return { uri: profilePic };
     } else {
@@ -132,7 +132,7 @@ export default function EditStudentScreen() {
         <View style={styles.uploadBox}>
           <View style={styles.profilePictureContainer}>
             <Image
-              source={getImageSource(profilePic)}
+              source={{ uri: profilePic }} // Directly use profilePic state
               style={styles.profilePicture}
             />
           </View>
@@ -155,7 +155,7 @@ export default function EditStudentScreen() {
         />
         <TextInput
           style={styles.input}
-          placeholder="gender"
+          placeholder="Gender"
           value={studentGender}
           onChangeText={text => setGender(text)}
         />
