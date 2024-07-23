@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } fro
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 export default function AddStudentScreen() {
   const navigation = useNavigation();
@@ -46,7 +47,7 @@ export default function AddStudentScreen() {
     formData.append('id', id);
 
     try {
-      const response = await fetch('http://192.168.254.104:3000/add-student', {
+      const response = await fetch('http://192.168.254.101:3000/add-student', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -118,12 +119,17 @@ export default function AddStudentScreen() {
           value={gmail}
           onChangeText={setGmail}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Gender"
-          value={gender}
-          onChangeText={setGender}
-        />
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={gender}
+            onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Gender" value="" />
+            <Picker.Item label="Male" value="Male" />
+            <Picker.Item label="Female" value="Female" />
+          </Picker>
+        </View>
         <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
           <Text style={styles.registerButtonText}>Register</Text>
         </TouchableOpacity>
@@ -213,6 +219,21 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     width: '100%',
+  },
+  pickerContainer: {
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 0.5,
+    borderRadius: 13,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    width: '100%',
+    justifyContent: 'center',
+  },
+  picker: {
+    width: '100%',
+    height: '100%',
+
   },
   registerButton: {
     backgroundColor: '#A32926',
