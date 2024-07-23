@@ -87,6 +87,12 @@ export default function ProfileScreen() {
     navigation.navigate('Attendance', { id });
   };
 
+  const handlePassword = () => {
+    navigation.navigate('Password', {
+      id
+    });
+  };
+
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
@@ -126,6 +132,10 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.option} onPress={handleProfileDetails}>
           <Icon name="user-edit" size={25} color="#A32926" style={styles.optionIcon}  />
           <Text style={styles.optionText}>Profile Details</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.option} onPress={handlePassword}>
+          <Icon name="lock" size={25} color="#A32926" style={styles.optionIcon}  />
+          <Text style={styles.optionText}> Change Password</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Icon name="sign-out-alt" size={25} color="#A32926" style={styles.optionIcon} />
