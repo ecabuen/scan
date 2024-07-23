@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const bcrypt = require('bcrypt'); // Import bcrypt
+const bcrypt = require('bcrypt'); 
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -33,19 +33,32 @@ db.connect((err) => {
 app.post('/register', (req, res) => {
   const { firstname, lastname, email, password } = req.body;
 
-  // Hash the password before storing it in the database
-  const hashedPassword = bcrypt.hashSync(password, 8);
-
-  const sql = 'INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)';
-  db.query(sql, [firstname, lastname, email, hashedPassword], (err, result) => {
+  // Check if email already exists
+  const checkEmailSql = 'SELECT * FROM users WHERE email = ?';
+  db.query(checkEmailSql, [email], (err, results) => {
     if (err) {
       console.error('SQL error:', err);
       return res.status(500).send('Server error');
     }
-    console.log('User registered:', result);
-    res.status(201).send('User registered');
+    if (results.length > 0) {
+      return res.status(400).send('Email already in use');
+    }
+
+    // Hash the password before storing it in the database
+    const hashedPassword = bcrypt.hashSync(password, 8);
+
+    const insertSql = 'INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)';
+    db.query(insertSql, [firstname, lastname, email, hashedPassword], (err, result) => {
+      if (err) {
+        console.error('SQL error:', err);
+        return res.status(500).send('Server error');
+      }
+      console.log('User registered:', result);
+      res.status(201).send('User registered');
+    });
   });
 });
+
 
 // Login endpoint
 app.post('/login', (req, res) => {
@@ -155,22 +168,30 @@ app.post('/add-student', upload.single('profilePic'), (req, res) => {
 });
 
 //get student
+// Fetch students with attendance status for today
 app.get('/students/:id', (req, res) => {
   const teacherId = req.params.id;
 
-  const sql = 'SELECT * FROM student WHERE teacher_id = ?';
+  const sql = `
+SELECT s.*, a.status AS attendanceStatus
+FROM student s
+LEFT JOIN (
+  SELECT studentID, status
+  FROM attendance
+  WHERE date = CURDATE()
+) a ON s.studentID = a.studentID
+WHERE s.teacher_id = ?
+`;
+
   db.query(sql, [teacherId], (err, results) => {
     if (err) {
       console.error('SQL error:', err);
       return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
     }
-
-    res.status(200).json({
-      status: 'success',
-      data: results,
-    });
+    res.status(200).json({ status: 'success', data: results });
   });
 });
+
 
 
 // update student
@@ -293,6 +314,84 @@ app.post('/verify-password-and-delete', (req, res) => {
       }
       res.status(200).json({ status: 'success', message: 'Student deleted successfully' });
     });
+  });
+});
+
+
+// Endpoint to check and update attendance
+app.post('/update-attendance', (req, res) => {
+  const { teacherId } = req.body;
+  const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+  
+  // Query to fetch students and their attendance for the current date
+  const fetchSql = `
+    SELECT s.studentID AS studentId, s.name, a.status
+    FROM student s
+    LEFT JOIN attendance a ON s.studentID = a.studentID AND a.date = CURDATE()
+    WHERE s.teacher_id = ?;
+  `;
+
+  db.query(fetchSql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+
+    // Iterate through results and update attendance if necessary
+    const updates = results.map(student => {
+      if (!student.status) {
+        // Mark as absent if no attendance record exists for the current date
+        return new Promise((resolve, reject) => {
+          const insertSql = 'INSERT INTO attendance (studentID, date, status) VALUES (?, ?, ?)';
+          db.query(insertSql, [student.studentID, currentDate, 'Absent'], (err, result) => {
+            if (err) {
+              console.error('SQL error:', err);
+              return reject(err);
+            }
+            resolve();
+          });
+        });
+      }
+      return Promise.resolve();
+    });
+
+    Promise.all(updates)
+      .then(() => {
+        res.status(200).json({
+          status: 'success',
+          data: results.map(student => ({
+            ...student,
+            status: student.status || 'Absent',
+          })),
+        });
+      })
+      .catch(err => {
+        res.status(500).json({ status: 'error', message: 'Failed to update attendance' });
+      });
+  });
+});
+
+//update attendance status
+app.post('/update-student-status', (req, res) => {
+  console.log('Received request to update status:', req.body);
+  const { studentId, newStatus } = req.body;
+  const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+
+  const updateSql = `
+    UPDATE attendance
+    SET status = ?
+    WHERE studentID = ? AND date = CURDATE();
+  `;
+
+  db.query(updateSql, [newStatus, studentId], (err, result) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to update attendance status' });
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ status: 'error', message: 'No record found to update' });
+    }
+    res.status(200).json({ status: 'success', message: 'Attendance status updated' });
   });
 });
 
