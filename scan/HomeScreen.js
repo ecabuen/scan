@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Camera } from 'expo-camera';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { PieChart, LineChart } from 'react-native-chart-kit';
+import axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,12 +15,121 @@ export default function HomeScreen() {
   const [activeIcon, setActiveIcon] = useState('profile');
   const [hasPermission, setHasPermission] = useState(null);
   const [selectedTab, setSelectedTab] = useState('daily');
+  const [presentStudents, setPresentStudents] = useState(0);
+  const [lateStudents, setLateStudents] = useState(0);
+  const [absentStudents, setAbsentStudents] = useState(0);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [genderData, setGenderData] = useState([]);
+  const [dailyData, setDailyData] = useState({
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [
+      {
+        data: [0, 0, 0, 0, 0], // Default data array to prevent reduce error
+      },
+    ],
+  });
+  const [weeklyData, setWeeklyData] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+      },
+    ],
+  });
+  const [monthlyData, setMonthlyData] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+      },
+    ],
+  });
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
+
+    // Fetch attendance and gender data
+    axios.get(`http://192.168.254.104:3000/attendance/today?teacherId=${id}`)
+      .then(response => {
+        setPresentStudents(response.data.present);
+        setLateStudents(response.data.late);
+        setAbsentStudents(response.data.absent);
+        setTotalStudents(response.data.total);
+        const genderCounts = response.data.gender.map(g => ({
+          name: g.gender,
+          population: g.count,
+          color: g.gender === 'Male' ? '#A32926' : '#e59997',
+          legendFontColor: '#000',
+          legendFontSize: 15,
+        }));
+        setGenderData(genderCounts);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  
+    // Fetch daily attendance data
+    axios.get(`http://192.168.254.104:3000/attendance/daily?teacherId=${id}`)
+      .then(response => {
+        const dailyCounts = [0, 0, 0, 0, 0]; // Default array for weekdays
+        response.data.forEach(d => {
+          const index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(d.day);
+          if (index !== -1) {
+            dailyCounts[index] = d.presentCount;
+          }
+        });
+        setDailyData({
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+          datasets: [
+            {
+              data: dailyCounts,
+            },
+          ],
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
+    // Fetch weekly attendance data
+    axios.get(`http://192.168.254.104:3000/attendance/weekly?teacherId=${id}`)
+      .then(response => {
+        const weeks = response.data.map(d => d.week);
+        const weeklyCounts = response.data.map(d => d.presentCount);
+        setWeeklyData({
+          labels: weeks,
+          datasets: [
+            {
+              data: weeklyCounts,
+            },
+          ],
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
+    // Fetch monthly attendance data
+    axios.get(`http://192.168.254.104:3000/attendance/monthly?teacherId=${id}`)
+      .then(response => {
+        const months = response.data.map(d => d.month);
+        const monthlyCounts = response.data.map(d => d.presentCount);
+        setMonthlyData({
+          labels: months,
+          datasets: [
+            {
+              data: monthlyCounts,
+            },
+          ],
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
   }, []);
 
   const handleProfile = () => {
@@ -48,64 +158,12 @@ export default function HomeScreen() {
     }
   };
 
-  const totalStudents = 30;
-  const presentStudents = 28;
-  const lateStudents = 2;
-  const absentStudents = totalStudents - presentStudents - lateStudents;
-  const maleStudents = 18;
-  const femaleStudents = totalStudents - maleStudents;
-
-  const genderData = [
-    {
-      name: 'Male',
-      population: maleStudents,
-      color: '#A32926',
-      legendFontColor: '#000',
-      legendFontSize: 15,
-    },
-    {
-      name: 'Female',
-      population: femaleStudents,
-      color: '#e59997',
-      legendFontColor: '#000',
-      legendFontSize: 15,
-    },
-  ];
-
-  const dailyData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-    datasets: [
-      {
-        data: [28, 27, 29, 26, 28],
-      },
-    ],
-  };
-
-  const weeklyData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [
-      {
-        data: [140, 135, 145, 130],
-      },
-    ],
-  };
-
-  const monthlyData = {
-    labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
-    datasets: [
-      {
-        data: [580, 560, 540, 580, 560, 540, 560, 580, 560, 540],
-      },
-    ],
-  };
-
   const chartConfig = {
     backgroundGradientFrom: '#F2F2F2',
     backgroundGradientTo: '#F2F2F2',
     fillShadowGradient: '#A32926',
     color: (opacity = 1) => `rgba(163, 41, 38, ${opacity})`,
     labelColor: (opacity = 1) => `rgba(51, 51, 51, ${opacity})`,
-
     style: {
       borderRadius: 16,
     },
@@ -126,10 +184,6 @@ export default function HomeScreen() {
     }
   };
 
-  const getPercentage = (value, total) => {
-    return ((value / total) * 100).toFixed(0) + '%';
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -142,28 +196,28 @@ export default function HomeScreen() {
         <ScrollView style={styles.scrollView}>
           <View style={styles.cardContainer}>
             <View style={styles.dashboardCard}>
-              <Icon name="users" size={30} color="#fff" />
+              <Icon name="users" size={30} color="#A32926" />
               <View style={styles.dashboardCardContent}>
                 <Text style={styles.dashboardCardLabel}>Total Students</Text>
                 <Text style={styles.dashboardCardValue}>{totalStudents}</Text>
               </View>
             </View>
             <View style={styles.dashboardCard}>
-              <Icon name="user-check" size={30} color="#fff" />
+              <Icon name="user-check" size={30} color="#A32926" />
               <View style={styles.dashboardCardContent}>
                 <Text style={styles.dashboardCardLabel}>Present</Text>
                 <Text style={styles.dashboardCardValue}>{presentStudents}</Text>
               </View>
             </View>
             <View style={styles.dashboardCard}>
-              <Icon name="user-times" size={30} color="#fff" />
+              <Icon name="user-times" size={30} color="#A32926" />
               <View style={styles.dashboardCardContent}>
                 <Text style={styles.dashboardCardLabel}>Absent</Text>
                 <Text style={styles.dashboardCardValue}>{absentStudents}</Text>
               </View>
             </View>
             <View style={styles.dashboardCard}>
-              <Icon name="user-clock" size={30} color="#fff" />
+              <Icon name="user-clock" size={30} color="#A32926" />
               <View style={styles.dashboardCardContent}>
                 <Text style={styles.dashboardCardLabel}>Late</Text>
                 <Text style={styles.dashboardCardValue}>{lateStudents}</Text>
@@ -171,16 +225,12 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <View style={styles.analyticsContainer}>
-            <Text style={styles.analyticsTitle}>Gender Breakdown</Text>
+          <View style={styles.chartBoxContainer}>
+            <Text style={styles.analyticsTitle}>Gender Distribution</Text>
             <PieChart
-              style={styles.chart}
-              data={genderData.map(data => ({
-                ...data,
-                name: `${data.name} (${getPercentage(data.population, totalStudents)})`,
-              }))}
-              width={width * 1}
-              height={200}
+              data={genderData}
+              width={width * 0.9}
+              height={150}
               chartConfig={chartConfig}
               accessor="population"
               backgroundColor="transparent"
@@ -201,7 +251,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.analyticsContainer}>
+          <View style={styles.chartBoxContainer}>
             <Text style={styles.analyticsTitle}>{`${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} Attendance`}</Text>
             <LineChart
               style={styles.chart}
@@ -225,8 +275,8 @@ export default function HomeScreen() {
               <Icon name="camera" size={40} color="#fff" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={handleProfile} style={[styles.iconWrapper]}>
-            <Icon name="user-alt"  size={35} color="#A32926" />
+          <TouchableOpacity onPress={handleProfile} style={styles.iconWrapper}>
+            <Icon name="user-alt" size={35} color="#A32926" />
           </TouchableOpacity>
         </View>
       </View>
@@ -237,7 +287,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: '#c0c0c0',
   },
   headerContainer: {
     backgroundColor: '#A32926',
@@ -253,7 +303,7 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   headerText: {
-    color: '#fff',
+    color: '#FFFF',
     fontSize: 24,
     fontWeight: 'bold',
   },
@@ -264,7 +314,8 @@ const styles = StyleSheet.create({
   contentSection: {
     flex: 1,
     paddingVertical: 20,
-    paddingHorizontal: 10,
+    paddingBottom: 0,
+    paddingHorizontal: 13,
     backgroundColor: '#F2F2F2',
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
@@ -276,14 +327,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   dashboardCard: {
-    backgroundColor: '#A32926',
+    backgroundColor: '#F2F2F2',
     borderRadius: 10,
     padding: 15,
     marginVertical: 10,
-    width: '49%',
+    width: '45%',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
+    marginRight: 5,
+    marginLeft: 5,
   },
   dashboardCardContent: {
     alignItems: 'center',
@@ -291,24 +344,30 @@ const styles = StyleSheet.create({
   },
   dashboardCardLabel: {
     fontSize: 16,
-    color: '#fff',
+    color: '#A32926',
   },
   dashboardCardValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#A32926',
     marginTop: 5,
   },
-  analyticsContainer: {
-    marginTop: 20,
+  chartBoxContainer: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 15,
     alignItems: 'center',
-    paddingRight: 20,
+    elevation: 3,
+    marginRight: 5,
+    marginLeft: 5,
   },
   analyticsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
+    textAlign: 'center',
   },
   chart: {
     marginTop: 10,
@@ -338,10 +397,9 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   cameraButtonWrapper: {
-    
     bottom: 25,
     zIndex: 5,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   cameraButton: {
     width: 70,
@@ -355,15 +413,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-  },
-  active: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    padding: 5,
   },
   tabContainer: {
     flexDirection: 'row',
