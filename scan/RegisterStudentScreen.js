@@ -4,7 +4,7 @@ import Dialog from 'react-native-dialog';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import axios from 'axios';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-//install react-native-dialog
+//npm install react-native-dialog
 export default function RegisterStudent() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -17,7 +17,7 @@ export default function RegisterStudent() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.103:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.254.101:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
@@ -81,7 +81,7 @@ export default function RegisterStudent() {
 
   const deleteStudent = async (studentID, password) => {
     try {
-      const response = await axios.post('http://192.168.254.103:3000/verify-password-and-delete', {
+      const response = await axios.post('http://192.168.254.101:3000/verify-password-and-delete', {
         userId: id,
         password,
         studentID
@@ -142,7 +142,7 @@ export default function RegisterStudent() {
       </View>
       <TextInput
         style={styles.search}
-        placeholder="🔍 Search"
+        placeholder="🔍 Search by name"
         value={searchTerm}
         onChangeText={text => setSearchTerm(text)}
       />
@@ -153,12 +153,12 @@ export default function RegisterStudent() {
               source={getImageSource(student.profile_pic)}
               style={styles.studentImage}
             />
-            <Text style={styles.name}>{student.name}</Text>
+            <Text style={styles.name}>{student.name} </Text>
             <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(student.name, student.studentID, student.gmail, student.profile_pic)}>
-              <Icon name="edit" size={20} color="#A32926" />
+              <Icon name="edit" size={18} color="#A32926" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(student.studentID)}>
-              <Icon name="trash" size={20} color="#A32926" />
+              <Icon name="trash" size={18} color="#A32926" />
             </TouchableOpacity>
           </View>
         ))}
@@ -204,18 +204,18 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   search: {
-    height: 45,
+    height: 50,
     borderColor: '#ccc',
-    borderWidth: 0.5,
-    borderRadius: 13,
-    margin: 20,
+    borderWidth: 1,
+    borderRadius: 5,
+    margin: 10,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
-    shadowColor: '#939495',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.9,
-    shadowRadius: 2,
-    elevation: 5,
+    // shadowColor: '#939495',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.9,
+    // shadowRadius: 2,
+    // elevation: 5,
   },
   addButton: {
     color: "#A32926",
@@ -224,23 +224,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   studentContainer: {
-    padding: 20,
+    padding: 10,
   },
   studentCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 19,
-    borderWidth: 0.5,
-    borderColor: '#ccc',
-    borderRadius: 15,
-    marginBottom: 10,
     backgroundColor: '#fff',
-    height: 85,
-    shadowColor: '#939495',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
+    padding: 10,
+    borderRadius: 10,
+    marginVertical: 5,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    height:75
   },
   studentImage: {
     width: 50,
@@ -250,11 +246,14 @@ const styles = StyleSheet.create({
   },
   name: {
     flex: 1,
-    fontSize: 16,
-    color: '#A32926',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
   },
   editButton: {
     marginRight: 10,
   },
-  deleteButton: {},
+  deleteButton: {
+    marginRight: 10,
+  },
 });
