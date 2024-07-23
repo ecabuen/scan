@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
-import { useNavigation, useRoute} from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
 export default function AddStudentScreen() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
   const [gmail, setGmail] = useState('');
+  const [gender, setGender] = useState('');
   const [profilePic, setProfilePic] = useState(null);
   const route = useRoute();
   const { firstname, lastname, email, id } = route.params || {};
@@ -31,12 +31,13 @@ export default function AddStudentScreen() {
     }
   };
 
-  const uploadImage = async (uri, name, id) => {
+  const uploadImage = async (uri, name, gmail, gender, id) => {
     const formData = new FormData();
     const filename = `${name}.jpg`;
 
     formData.append('name', name);
     formData.append('gmail', gmail);
+    formData.append('gender', gender);
     formData.append('profilePic', {
       uri,
       name: filename,
@@ -45,7 +46,7 @@ export default function AddStudentScreen() {
     formData.append('id', id);
 
     try {
-      const response = await fetch('http://192.168.0.253:3000/add-student', {
+      const response = await fetch('http://192.168.254.104:3000/add-student', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -60,6 +61,7 @@ export default function AddStudentScreen() {
         setProfilePic(null);
         setGmail(null);
         setName(null);
+        setGender(null);
       } else {
         const errorData = await response.text();
         console.error('Error response:', errorData);
@@ -72,11 +74,11 @@ export default function AddStudentScreen() {
   };
 
   const handleRegister = () => {
-    if (!profilePic || !name || !gmail) {
+    if (!profilePic || !name || !gmail || !gender) {
       Alert.alert('Error', 'Please fill in all fields and select a profile picture.');
       return;
     }
-    uploadImage(profilePic, name, id);
+    uploadImage(profilePic, name, gmail, gender, id);
   };
 
   return (
@@ -115,6 +117,12 @@ export default function AddStudentScreen() {
           placeholder="Enter Gmail"
           value={gmail}
           onChangeText={setGmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Gender"
+          value={gender}
+          onChangeText={setGender}
         />
         <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
           <Text style={styles.registerButtonText}>Register</Text>
