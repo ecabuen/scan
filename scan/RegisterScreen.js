@@ -12,13 +12,26 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     // Input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
     if (!firstname || !lastname || !email || !password) {
       Alert.alert('Registration failed', 'All fields are required');
       return;
     }
 
+    if (!emailRegex.test(email)) {
+      Alert.alert('Registration failed', 'Invalid email format');
+      return;
+    }
+
+    if (!passwordRegex.test(password)) {
+      Alert.alert('Registration failed', 'Password must be at least 8 characters long and include uppercase, lowercase, number, and symbol');
+      return;
+    }
+
     try {
-      const response = await axios.post('http://192.168.0.115:3000/register', {
+      const response = await axios.post('http://192.168.254.101:3000/register', {
         firstname, 
         lastname, 
         email,
