@@ -47,7 +47,7 @@ export default function ProfileDetails() {
     formData.append('id', id);
   
     try {
-      const response = await axios.put(`http://192.168.254.103:3000/update-profile/${id}`, formData, {
+      const response = await axios.put(`http://192.168.254.113:3000/update-profile/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -67,9 +67,16 @@ export default function ProfileDetails() {
     }
   };
   
-  const handleUpdate = () => {
-    uploadImage(profileImage, id);
+  const handleUpdate = async () => {
+    await uploadImage(profileImage, id);
+    navigation.navigate('ProfileScreen', {
+      firstname: firstName,
+      lastname: lastName,
+      email: userEmail,
+      id: id
+    });
   };
+  
   
   const getImageSource = () => {
     try {
