@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform,Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import axios from 'axios';
@@ -20,17 +20,12 @@ export default function Report() {
     fetchStudents();
   }, [teacherId]);
 
-  // Adjusted fetchStudents function to fetch attendance status
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.103:3000/students/${teacherId}`, {
+      const response = await axios.get(`http://192.168.254.101:3000/students/${teacherId}`, {
         timeout: 10000,
       });
-      const fetchedStudents = response.data.data.map(student => ({
-        ...student,
-        attendanceStatus: student.status === 'Present' ? 'Present' : 'Absent', // Assuming 'status' holds 'Present' or 'Absent'
-      }));
-      setStudents(fetchedStudents);
+      setStudents(response.data.data);
     } catch (error) {
       console.error('Error fetching students:', error);
     }
@@ -69,6 +64,7 @@ export default function Report() {
     }
   };
 
+
   return (
     <View style={styles.container}>
       {/* Header Section */}
@@ -83,31 +79,54 @@ export default function Report() {
 
       {/* Content Section */}
       <View style={styles.contentSection}>
-      <ScrollView style={styles.scrollView}>
-  {students.map((student, idx) => (
-    <View key={idx} style={styles.studentContainer}>
-      <Image
-        source={getImageSource(student.profile_pic)}
-        style={styles.profilePic}
-      />
-      <View style={styles.studentInfo}>
-        <Text style={styles.studentName}>{student.name}</Text>
-        <View style={styles.statusContainer}>
-          <FontAwesome5
-            name={student.attendanceStatus === 'Present' ? 'check' : 'times'}
-            size={24}
-            color={student.attendanceStatus === 'Present' ? 'green' : 'red'}
-            style={styles.statusIcon}
-          />
-          <Text style={[styles.studentStatus, { color: student.attendanceStatus === 'Present' ? 'green' : 'red' }]}>
-            {student.attendanceStatus}
-          </Text>
-        </View>
-      </View>
-    </View>
-  ))}
-</ScrollView>
-
+        <ScrollView style={styles.scrollView}>
+          {students.map((student, idx) => (
+            <View key={idx} style={styles.studentContainer}>
+              <Image
+                source={getImageSource(student.profile_pic)}
+                style={styles.profilePic}
+              />
+              <View style={styles.studentInfo}>
+                <Text style={styles.studentName}>{student.name}</Text>
+                <View style={styles.statusContainer}>
+                  <FontAwesome5
+                    name={
+                      student.attendanceStatus === 'Present'
+                        ? 'check'
+                        : student.attendanceStatus === 'Late'
+                        ? 'clock'
+                        : 'times'
+                    }
+                    size={20}
+                    color={
+                      student.attendanceStatus === 'Present'
+                        ? 'green'
+                        : student.attendanceStatus === 'Late'
+                        ? 'orange'
+                        : 'red'
+                    }
+                    style={styles.statusIcon}
+                  />
+                  <Text
+                    style={[
+                      styles.studentStatus,
+                      {
+                        color:
+                          student.attendanceStatus === 'Present'
+                            ? 'green'
+                            : student.attendanceStatus === 'Late'
+                            ? 'orange'
+                            : 'red',
+                      },
+                    ]}
+                  >
+                    {student.attendanceStatus}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
       </View>
 
       {/* Date Pickers and Export Button Section */}
@@ -165,7 +184,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#fff',
-    fontSize: 25,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   contentSection: {
@@ -240,10 +259,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statusContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   statusIcon: {
-  marginRight: 5,
-},
+    marginRight: 5,
+  },
 });
