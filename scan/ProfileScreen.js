@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, Dimensions } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-
-
 import { Camera } from 'expo-camera';
-
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { firstname, lastname,email, id } = route.params || {};
+  const { firstname, lastname, email, id } = route.params || {};
   const [hasPermission, setHasPermission] = useState(null);
-  const [activeIcon, setActiveIcon] = useState('profile');
+  const [profile, setProfile] = useState({ firstname, lastname, email });
 
-  
+  useFocusEffect(
+    useCallback(() => {
+      // This will run every time the screen comes into focus
+      if (id) {
+        // Fetch updated profile data from your server or state management
+        // Example:
+        // axios.get(`http://yourserver.com/profile/${id}`)
+        //   .then(response => setProfile(response.data))
+        //   .catch(error => console.error(error));
+      }
+    }, [id])
+  );
 
   const handleLogout = () => {
     Alert.alert(
@@ -29,85 +37,79 @@ export default function ProfileScreen() {
       { cancelable: false }
     );
   };
-  
+
   const handleCamera = async () => {
     if (hasPermission) {
-      setActiveIcon('camera');
       navigation.navigate('CameraScreen');
     } else {
       const { status } = await Camera.requestCameraPermissionsAsync();
       if (status === 'granted') {
         setHasPermission(true);
-        setActiveIcon('camera');
         navigation.navigate('CameraScreen');
       } else {
         alert('Camera access is required.');
       }
     }
   };
-  const handleRegister = () => {
-    
-      console.log('Login successful:', { firstname, lastname, email, id }); 
-    navigation.navigate('RegisterStudentScreen', {
 
-      firstname,
-      lastname,
-      email,
+  const handleRegister = () => {
+    navigation.navigate('RegisterStudentScreen', {
+      firstname: profile.firstname,
+      lastname: profile.lastname,
+      email: profile.email,
       id
     });
   };
 
   const handleHome = () => {
     navigation.navigate('Home', {
-      firstname,
-      lastname,
-      email,
+      firstname: profile.firstname,
+      lastname: profile.lastname,
+      email: profile.email,
       id
     });
   };
+
   const handleProfileDetails = () => {
     navigation.navigate('ProfileDetails', {
-      firstname,
-      lastname,
-      email,
+      firstname: profile.firstname,
+      lastname: profile.lastname,
+      email: profile.email,
       id
     });
   };
+
   const handleReport = () => {
-    navigation.navigate('Report', {
-      id
-    });
+    navigation.navigate('Report', { id });
   };
+
   const handleAttendance = () => {
-    navigation.navigate('Attendance', {
-      id
-    });
+    navigation.navigate('Attendance', { id });
   };
 
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
-      const imageName = `./${firstname}-${lastname}.jpg`;
+      const imageName = `./${profile.firstname}-${profile.lastname}.jpg`;
       return images(imageName);
     } catch (error) {
-      console.warn(`Image not found: ${firstname}-${lastname}.jpg. Using default image.`);
-      return userIcon; 
+      console.warn(`Image not found: ${profile.firstname}-${profile.lastname}.jpg. Using default image.`);
+      return userIcon;
     }
   };
 
   return (
     <View style={styles.container}>
-<       View style={styles.headerContainer}>
+      <View style={styles.headerContainer}>
         <View style={styles.header}>
           <Image source={getImageSource()} style={styles.logo} />
           <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>{firstname} {lastname}</Text>
-            <Text style={styles.headerDate}>{email}</Text>
+            <Text style={styles.headerTitle}>{profile.firstname} {profile.lastname}</Text>
+            <Text style={styles.headerDate}>{profile.email}</Text>
           </View>
         </View>
       </View>
 
-      {/* Content Section */}
       <View style={styles.contentSection}>
         <TouchableOpacity style={styles.option} onPress={handleRegister}>
           <Icon name="user-plus" size={25} color="#A32926" style={styles.optionIcon} />
@@ -115,7 +117,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAttendance}>
           <Icon name="calendar-check" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}> Attendance Management</Text>
+          <Text style={styles.optionText}>   Attendance Management</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleReport}>
           <Icon name="file-alt" size={25} color="#A32926" style={styles.optionIcon} />
@@ -123,16 +125,14 @@ export default function ProfileScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleProfileDetails}>
           <Icon name="user-edit" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}> Profile Details</Text>
+          <Text style={styles.optionText}>Profile Details</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Icon name="sign-out-alt" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>   Logout</Text>
+          <Text style={styles.optionText}>  Logout</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Footer Section */}
       <View style={styles.footerContainer}>
         <View style={styles.footer}>
           <TouchableOpacity onPress={handleHome} style={styles.iconWrapper}>
