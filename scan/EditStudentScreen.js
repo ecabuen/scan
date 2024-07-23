@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Image,
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import * as ImagePicker from 'expo-image-picker';
+import { Picker } from '@react-native-picker/picker';
 
 export default function EditStudentScreen() {
   const navigation = useNavigation();
@@ -55,7 +56,7 @@ export default function EditStudentScreen() {
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.113:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.101:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -81,7 +82,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.113:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.101:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ export default function EditStudentScreen() {
         <View style={styles.uploadBox}>
           <View style={styles.profilePictureContainer}>
             <Image
-              source={{ uri: profilePic }} // Directly use profilePic state
+              source={getImageSource(profilePic)}
               style={styles.profilePicture}
             />
           </View>
@@ -153,12 +154,17 @@ export default function EditStudentScreen() {
           value={gmail}
           onChangeText={text => setGmail(text)}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Gender"
-          value={studentGender}
-          onChangeText={text => setGender(text)}
-        />
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={studentGender}
+            onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Select Gender" value="" />
+            <Picker.Item label="Male" value="Male" />
+            <Picker.Item label="Female" value="Female" />
+          </Picker>
+        </View>
         <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
           <Text style={styles.updateButtonText}>Update</Text>
         </TouchableOpacity>
@@ -253,6 +259,20 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     width: '100%',
+  },
+  pickerContainer: {
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 0.5,
+    borderRadius: 13,
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    width: '100%',
+    justifyContent: 'center',
+  },
+  picker: {
+    width: '100%',
+    height: '100%',
   },
   updateButton: {
     backgroundColor: '#A32926',
