@@ -515,6 +515,144 @@ app.get('/attendance/today', (req, res) => {
   });
 });
 
+app.get('/attendance/today', (req, res) => {
+  const teacherId = req.query.teacherId;
+
+  const presentQuery = `
+    SELECT COUNT(*) AS present
+    FROM attendance
+    WHERE status = 'Present' AND date = CURDATE() AND studentID IN (
+      SELECT studentID
+      FROM student
+      WHERE teacher_Id = ?
+    );
+  `;
+
+  const lateQuery = `
+    SELECT COUNT(*) AS late
+    FROM attendance
+    WHERE status = 'Late' AND date = CURDATE() AND studentID IN (
+      SELECT studentID
+      FROM student
+      WHERE teacher_Id = ?
+    );
+  `;
+
+  const absentQuery = `
+    SELECT COUNT(*) AS absent
+    FROM attendance
+    WHERE status = 'Absent' AND date = CURDATE() AND studentID IN (
+      SELECT studentID
+      FROM student
+      WHERE teacher_Id = ?
+    );
+  `;
+
+  const totalQuery = `
+    SELECT COUNT(*) AS total
+    FROM student
+    WHERE teacher_Id = ?;
+  `;
+
+  const genderQuery = `
+    SELECT gender, COUNT(*) AS count
+    FROM student
+    WHERE teacher_Id = ?
+    GROUP BY gender;
+  `;
+
+  db.query(presentQuery, [teacherId], (err, presentResult) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    db.query(lateQuery, [teacherId], (err, lateResult) => {
+      if (err) {
+        return res.status(500).send(err);
+      }
+      db.query(absentQuery, [teacherId], (err, absentResult) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+        db.query(totalQuery, [teacherId], (err, totalResult) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+          db.query(genderQuery, [teacherId], (err, genderResult) => {
+            if (err) {
+              return res.status(500).send(err);
+            }
+            res.json({
+              present: presentResult[0].present,
+              late: lateResult[0].late,
+              absent: absentResult[0].absent,
+              total: totalResult[0].total,
+              gender: genderResult
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+app.get('/attendance/daily', (req, res) => {
+  const teacherId = req.query.teacherId;
+
+  const dailyAttendanceQuery = `
+    SELECT DATE_FORMAT(date, '%a') AS day, COUNT(*) AS presentCount
+    FROM attendance
+    WHERE status = 'Present' AND WEEK(date) = WEEK(CURDATE()) AND studentID IN (
+      SELECT studentID
+      FROM student
+      WHERE teacher_Id = ?
+    )
+    GROUP BY day;
+  `;
+
+  db.query(dailyAttendanceQuery, [teacherId], (err, results) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
+});
+
+app.get('/attendance/weekly', (req, res) => {
+  const teacherId = req.query.teacherId;
+
+  const weeklyQuery = `
+    SELECT CONCAT('Week ', WEEK(date)) AS week, COUNT(*) AS presentCount
+    FROM attendance
+    WHERE status = 'present' AND MONTH(date) = MONTH(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
+    GROUP BY week;
+  `;
+
+  db.query(weeklyQuery, [teacherId], (err, weeklyResult) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.json(weeklyResult);
+  });
+});
+
+app.get('/attendance/monthly', (req, res) => {
+  const teacherId = req.query.teacherId;
+
+  const weeklyQuery = `
+     SELECT DATE_FORMAT(date, '%b') AS month, COUNT(*) AS presentCount
+      FROM attendance
+      WHERE status = 'present' AND YEAR(date) = YEAR(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
+      GROUP BY month
+  `;
+
+  db.query(weeklyQuery, [teacherId], (err, weeklyResult) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.json(weeklyResult);
+  });
+});
+
 
 
 app.listen(port, () => {
