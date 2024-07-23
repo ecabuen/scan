@@ -7,9 +7,10 @@ import * as ImagePicker from 'expo-image-picker';
 export default function EditStudentScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { studentName, studentID, studentGmail, studentProfilePic } = route.params || {};
+  const { studentName, studentID, studentGmail, gender, studentProfilePic } = route.params || {};
   const [name, setName] = useState(studentName || '');
   const [gmail, setGmail] = useState(studentGmail || '');
+  const [studentGender, setGender] = useState(gender ||'');
   const [profilePic, setProfilePic] = useState(studentProfilePic || '');
 
   const handleBack = () => {
@@ -38,6 +39,7 @@ export default function EditStudentScreen() {
     const updateData = {};
     updateData.name = name;
     updateData.gmail = gmail;
+    updateData.gender = studentGender;
 
     if (profilePic && profilePic !== studentProfilePic) {
       const formData = new FormData();
@@ -45,6 +47,7 @@ export default function EditStudentScreen() {
 
       formData.append('name', name);
       formData.append('gmail', gmail);
+      formData.append('gender', studentGender);
       formData.append('profilePic', {
         uri: profilePic,
         name: filename,
@@ -52,7 +55,7 @@ export default function EditStudentScreen() {
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.103:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.104:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -78,7 +81,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.103:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.104:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -149,6 +152,12 @@ export default function EditStudentScreen() {
           placeholder="Gmail"
           value={gmail}
           onChangeText={text => setGmail(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="gender"
+          value={studentGender}
+          onChangeText={text => setGender(text)}
         />
         <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
           <Text style={styles.updateButtonText}>Update</Text>
