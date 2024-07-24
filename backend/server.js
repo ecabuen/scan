@@ -653,6 +653,33 @@ app.get('/attendance/monthly', (req, res) => {
   });
 });
 
+// Endpoint for fetching filtered students
+app.get('/students/:id/filter', (req, res) => {
+  const teacherId = req.params.id;
+  const { startDate, endDate } = req.query;
+
+  // Adjust SQL query to use startDate and endDate
+  const sql = `
+SELECT s.*, a.date AS attendanceDate, a.status AS attendanceStatus
+FROM student s
+LEFT JOIN (
+  SELECT studentID, date, status
+  FROM attendance
+  WHERE date BETWEEN ? AND ?
+) a ON s.studentID = a.studentID
+WHERE s.teacher_id = ?
+
+  `;
+
+  db.query(sql, [startDate, endDate, teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch filtered students' });
+    }
+    res.status(200).json({ status: 'success', data: results });
+  });
+});
+
 
 
 app.listen(port, () => {
