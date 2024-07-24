@@ -13,6 +13,7 @@ export default function EditStudentScreen() {
   const [gmail, setGmail] = useState(studentGmail || '');
   const [studentGender, setGender] = useState(gender || '');
   const [profilePic, setProfilePic] = useState(studentProfilePic || '');
+  const [selectedImageUri, setSelectedImageUri] = useState('');
 
   const handleBack = () => {
     navigation.goBack();
@@ -28,6 +29,7 @@ export default function EditStudentScreen() {
 
     if (!result.canceled) {
       setProfilePic(result.assets[0].uri); // Update the profilePic state with the new image URI
+      setSelectedImageUri(result.assets[0].uri); // Store the selected image URI in a separate state
     }
   };
 
@@ -42,7 +44,7 @@ export default function EditStudentScreen() {
     updateData.gmail = gmail;
     updateData.gender = studentGender;
 
-    if (profilePic && profilePic !== studentProfilePic) {
+    if (selectedImageUri) { // If a new image has been selected
       const formData = new FormData();
       const filename = `${name}.jpg`;
 
@@ -50,13 +52,13 @@ export default function EditStudentScreen() {
       formData.append('gmail', gmail);
       formData.append('gender', studentGender);
       formData.append('profilePic', {
-        uri: profilePic,
+        uri: selectedImageUri,
         name: filename,
         type: 'image/jpeg',
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.101:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.115:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -82,7 +84,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.101:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.115:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +106,9 @@ export default function EditStudentScreen() {
   };
 
   const getImageSource = () => {
-    if (profilePic.startsWith('http')) {
+    if (selectedImageUri) {
+      return { uri: selectedImageUri };
+    } else if (profilePic.startsWith('http')) {
       return { uri: profilePic };
     } else {
       try {
@@ -133,7 +137,7 @@ export default function EditStudentScreen() {
         <View style={styles.uploadBox}>
           <View style={styles.profilePictureContainer}>
             <Image
-              source={getImageSource(profilePic)}
+              source={getImageSource()}
               style={styles.profilePicture}
             />
           </View>
