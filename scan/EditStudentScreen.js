@@ -58,7 +58,7 @@ export default function EditStudentScreen() {
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.115:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.101:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -84,7 +84,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.115:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.101:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
