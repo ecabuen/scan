@@ -47,7 +47,7 @@ export default function ProfileDetails() {
     formData.append('id', id);
   
     try {
-      const response = await axios.put(`http://192.168.254.113:3000/update-profile/${id}`, formData, {
+      const response = await axios.put(`http://192.168.254.101:3000/update-profile/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -77,7 +77,6 @@ export default function ProfileDetails() {
     });
   };
   
-  
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
@@ -89,17 +88,13 @@ export default function ProfileDetails() {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color="#FFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.headerButton} onPress={handleUpdate}>
-          <Icon name="save" size={24} color="#FFF" />
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Profile Details</Text>
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.imageContainer}>
@@ -107,7 +102,6 @@ export default function ProfileDetails() {
             {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
             ) : (
-            
               <Image source={getImageSource()} style={styles.profileImage}/>
             )}
             <View style={styles.editIconContainer}>
@@ -139,7 +133,11 @@ export default function ProfileDetails() {
             onChangeText={setUserEmail}
           />
         </View>
+      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+        <Text style={styles.updateButtonText}>Update Profile</Text>
+      </TouchableOpacity>
       </View>
+
     </View>
   );
 }
@@ -162,11 +160,11 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   headerTitle: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FFF',
     textAlign: 'center',
-    flex: 1,
+    paddingRight:125
   },
   contentContainer: {
     flex: 1,
@@ -208,5 +206,18 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     width: '100%',
     fontSize: 17,
+  },
+  updateButton: {
+    backgroundColor: '#A32926',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '100%',
+    marginTop:10
+  },
+  updateButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
