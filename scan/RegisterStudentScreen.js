@@ -17,7 +17,7 @@ export default function RegisterStudent() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.104:3000/students/${id}`);
+      const response = await axios.get(`http://192.168.254.101:3000/students/${id}`);
       if (response.status === 200) {
         setStudents(response.data.data);
       }
@@ -82,7 +82,7 @@ export default function RegisterStudent() {
 
   const deleteStudent = async (studentID, password) => {
     try {
-      const response = await axios.post('http://192.168.254.104:3000/verify-password-and-delete', {
+      const response = await axios.post('http://192.168.254.101:3000/verify-password-and-delete', {
         userId: id,
         password,
         studentID
@@ -135,18 +135,22 @@ export default function RegisterStudent() {
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
             <Icon name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Section 1</Text>
-          <TouchableOpacity onPress={handleAdd} style={styles.headerButton}>
-            <Icon name="plus" size={15} style={styles.addButton} />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Student Management</Text>
         </View>
       </View>
-      <TextInput
-        style={styles.search}
-        placeholder="🔍 Search by name"
-        value={searchTerm}
-        onChangeText={text => setSearchTerm(text)}
-      />
+      
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.search}
+          placeholder="🔍 Search by name"
+          value={searchTerm}
+          onChangeText={text => setSearchTerm(text)}
+        />
+        <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
+          <Icon name="plus" size={20} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView contentContainerStyle={styles.studentContainer}>
         {filteredStudents.map((student, index) => (
           <View key={index} style={styles.studentCard}>
@@ -188,6 +192,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     backgroundColor: '#A32926',
     height: 110,
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -195,6 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 40,
     paddingHorizontal: 10,
+    paddingRight:100
   },
   headerButton: {
     padding: 10,
@@ -204,18 +210,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
   search: {
+    flex: 1,
     height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
-    margin: 10,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
   },
   addButton: {
-    color: "#A32926",
-    backgroundColor: '#fff',
+    marginLeft: 10,
+    backgroundColor: '#A32926',
     padding: 15,
     borderRadius: 10,
   },
