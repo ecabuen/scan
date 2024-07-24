@@ -87,7 +87,7 @@ export default function AddStudentScreen() {
       <View style={styles.headerContainer}>
         <View style={styles.header}>
           <TouchableOpacity onPress={handleBack} style={styles.headerButton}>
-            <Icon name="arrow-left" size={20} color="#fff" />
+            <Icon name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Add Student</Text>
           <View style={styles.headerButtonPlaceholder} />
@@ -145,14 +145,16 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     backgroundColor: '#A32926',
-    height: 100,
+    height: 105,
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 45,
+    marginTop: 40,
     paddingHorizontal: 10,
+
   },
   headerButton: {
     padding: 10,
