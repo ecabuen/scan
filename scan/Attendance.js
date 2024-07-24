@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
 import { FontAwesome5 } from '@expo/vector-icons';
 
-export default function Report() {
+export default function Attendance() {
   const navigation = useNavigation();
   const route = useRoute();
   const { id: teacherId } = route.params || {};
@@ -232,9 +232,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
     paddingHorizontal: 15,
+    paddingRight:50
+    
   },
   backButton: {
     marginRight: 10,
+    padding:10
   },
   header: {
     flex: 1,
