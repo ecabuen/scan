@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Image, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import axios from 'axios';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Papa from 'papaparse';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export default function Report() {
   const navigation = useNavigation();
@@ -31,10 +34,26 @@ export default function Report() {
     }
   };
 
+  const fetchFilteredStudents = async (startDate, endDate) => {
+    try {
+      const response = await axios.get(`http://192.168.254.101:3000/students/${teacherId}/filter`, {
+        params: {
+          startDate: formatDateForAPI(startDate),
+          endDate: formatDateForAPI(endDate),
+        },
+        timeout: 10000,
+      });
+      setStudents(response.data.data);
+    } catch (error) {
+      console.error('Error fetching filtered students:', error.response || error.message);
+    }
+  };
+
   const onChangeStartDate = (event, selectedDate) => {
     setShowStartDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setStartDate(selectedDate);
+      fetchFilteredStudents(selectedDate, endDate);
     }
   };
 
@@ -42,6 +61,7 @@ export default function Report() {
     setShowEndDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setEndDate(selectedDate);
+      fetchFilteredStudents(startDate, selectedDate);
     }
   };
 
@@ -64,6 +84,73 @@ export default function Report() {
     }
   };
 
+  const formatDateForRange = (date) => {
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
+  const formatDateForAPI = (date) => {
+    return date.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+  };
+
+  const exportToCSV = async () => {
+    if (students.length === 0) {
+      Alert.alert('No data', 'There are no students to export.');
+      return;
+    }
+  
+    // Create a list of dates in the date range
+    const dateRange = [];
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      dateRange.push(formatDateForRange(new Date(d))); // Format to DD/MM/YYYY
+    }
+  
+    // Create a map to store attendance records
+    const attendanceMap = {};
+  
+    students.forEach(student => {
+      if (!attendanceMap[student.name]) {
+        attendanceMap[student.name] = { Name: student.name };
+      }
+  
+      const date = formatDate(student.attendanceDate);
+      if (dateRange.includes(date)) {
+        attendanceMap[student.name][date] = student.attendanceStatus || 'Absent';
+      }
+    });
+  
+    // Fill in missing dates with 'Absent'
+    Object.keys(attendanceMap).forEach(name => {
+      dateRange.forEach(date => {
+        if (attendanceMap[name][date] === undefined) {
+          attendanceMap[name][date] = 'Absent';
+        }
+      });
+    });
+  
+    // Convert map to an array of records
+    const csvData = Object.values(attendanceMap);
+  
+    // Convert data to CSV
+    const csv = Papa.unparse(csvData, { columns: ['Name', ...dateRange] });
+  
+    console.log('CSV Data:', csv);
+  
+    // Save CSV file and share
+    const fileUri = FileSystem.documentDirectory + 'students_report.csv';
+    await FileSystem.writeAsStringAsync(fileUri, csv);
+  
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(fileUri);
+    } else {
+      Alert.alert('Sharing not available', 'Cannot share the file.');
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -155,7 +242,7 @@ export default function Report() {
         )}
       </View>
 
-      <TouchableOpacity style={styles.exportButton} onPress={() => {}}>
+      <TouchableOpacity style={styles.exportButton} onPress={exportToCSV}>
         <Text style={styles.exportButtonText}>Export to CSV</Text>
       </TouchableOpacity>
     </View>
@@ -174,6 +261,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
     paddingHorizontal: 15,
+    paddingRight:50
+    
   },
   backButton: {
     marginRight: 10,
@@ -203,18 +292,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 10,
     borderRadius: 10,
+    padding: 10,
     marginVertical: 5,
     width: '100%',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
   },
   profilePic: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 10,
   },
   studentInfo: {
@@ -224,45 +318,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  studentStatus: {
-    fontSize: 16,
-    color: '#666',
-  },
-  dateFilterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  datePickerButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  datePickerButtonText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  exportButton: {
-    backgroundColor: '#A32926',
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    elevation: 3,
-    alignItems: 'center',
-  },
-  exportButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusIcon: {
     marginRight: 5,
+  },
+  studentStatus: {
+    fontSize: 16,
+  },
+  dateFilterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  datePickerButton: {
+    backgroundColor: '#A32926',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  datePickerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  exportButton: {
+    backgroundColor: '#A32926',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: 'center',
+    margin: 20,
+    
+    
+  },
+  exportButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
