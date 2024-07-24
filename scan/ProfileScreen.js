@@ -119,27 +119,27 @@ export default function ProfileScreen() {
       <View style={styles.contentSection}>
         <TouchableOpacity style={styles.option} onPress={handleRegister}>
           <Icon name="user-plus" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}> Student Management</Text>
+          <Text style={styles.optionText}>  Student Management</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAttendance}>
           <Icon name="calendar-check" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}>   Attendance Management</Text>
+          <Text style={styles.optionText}>    Attendance Management</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleReport}>
           <Icon name="file-alt" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>    Report</Text>
+          <Text style={styles.optionText}>     Attendance Report</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleProfileDetails}>
           <Icon name="user-edit" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}>Profile Details</Text>
+          <Text style={styles.optionText}>  Profile Details</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handlePassword}>
           <Icon name="lock" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}> Change Password</Text>
+          <Text style={styles.optionText}>    Change Password</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Icon name="sign-out-alt" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>  Logout</Text>
+          <Text style={styles.optionText}>    Logout</Text>
         </TouchableOpacity>
       </View>
 
