@@ -132,12 +132,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#A32926',
     marginTop: 40,
+    paddingRight:50
   },
   headerButton: {
     padding: 10,
   },
   headerTitle: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FFF',
     textAlign: 'center',
@@ -180,7 +181,10 @@ const styles = StyleSheet.create({
   updateButton: {
     backgroundColor: '#A32926',
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '100%',
+    marginTop:10
   },
   updateButtonText: {
     color: '#FFF',
