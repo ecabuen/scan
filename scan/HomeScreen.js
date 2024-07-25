@@ -256,7 +256,7 @@ export default function HomeScreen() {
       <View style={styles.footerContainer}>
         <View style={styles.footer}>
           <TouchableOpacity style={styles.iconWrapper}>
-            <Icon name="tachometer-alt" size={35} color="#A32926" />
+            <Icon name="tachometer-alt" size={35} color="#c1c1c1" />
           </TouchableOpacity>
           <View style={styles.cameraButtonWrapper}>
             <TouchableOpacity onPress={handleCamera} style={styles.cameraButton}>
