@@ -96,10 +96,10 @@ export default function ProfileScreen() {
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
-      const imageName = `./${profile.firstname}-${profile.lastname}.jpg`;
+      const imageName = `./${id}.jpg`;
       return images(imageName);
     } catch (error) {
-      console.warn(`Image not found: ${profile.firstname}-${profile.lastname}.jpg. Using default image.`);
+      console.warn(`Image not found: ${id}.jpg. Using default image.`);
       return userIcon;
     }
   };
@@ -119,27 +119,27 @@ export default function ProfileScreen() {
       <View style={styles.contentSection}>
         <TouchableOpacity style={styles.option} onPress={handleRegister}>
           <Icon name="user-plus" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>  Student Management</Text>
+          <Text style={styles.optionText}> Student Management</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleAttendance}>
-          <Icon name="calendar-check" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}>    Attendance Management</Text>
+          <Icon name="calendar-day" size={25} color="#A32926" style={styles.optionIcon}  />
+          <Text style={styles.optionText}>   Attendance Management</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleReport}>
-          <Icon name="file-alt" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>     Attendance Report</Text>
+          <Icon name="clipboard-list" size={25} color="#A32926" style={styles.optionIcon} />
+          <Text style={styles.optionText}>    Attendance Report</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleProfileDetails}>
           <Icon name="user-edit" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}>  Profile Details</Text>
+          <Text style={styles.optionText}> Profile Details</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handlePassword}>
           <Icon name="lock" size={25} color="#A32926" style={styles.optionIcon}  />
-          <Text style={styles.optionText}>    Change Password</Text>
+          <Text style={styles.optionText}>   Change Password</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Icon name="sign-out-alt" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}>    Logout</Text>
+          <Text style={styles.optionText}>   Logout</Text>
         </TouchableOpacity>
       </View>
 
@@ -154,7 +154,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={[styles.iconWrapper, styles.active]}>
-            <Icon name="user-alt" size={35} color="#A32926" style={styles.icon} />
+            <Icon name="user-alt" size={35} color="#c1c1c1" style={styles.icon} />
           </TouchableOpacity>
         </View>
       </View>
