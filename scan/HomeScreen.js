@@ -24,7 +24,7 @@ export default function HomeScreen() {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
     datasets: [
       {
-        data: [0, 0, 0, 0, 0],
+        data: [0, 0, 0, 0, 0], // Default data array to prevent reduce error
       },
     ],
   });
@@ -52,7 +52,7 @@ export default function HomeScreen() {
           const { status } = await Camera.requestCameraPermissionsAsync();
           setHasPermission(status === 'granted');
           
-          const todayResponse = await axios.get(`http://192.168.254.101:3000/attendance/today?teacherId=${id}`);
+          const todayResponse = await axios.get(`http://192.168.254.107:3000/attendance/today?teacherId=${id}`);
           setPresentStudents(todayResponse.data.present);
           setLateStudents(todayResponse.data.late);
           setAbsentStudents(todayResponse.data.absent);
@@ -66,7 +66,7 @@ export default function HomeScreen() {
           }));
           setGenderData(genderCounts);
           
-          const dailyResponse = await axios.get(`http://192.168.254.101:3000/attendance/daily?teacherId=${id}`);
+          const dailyResponse = await axios.get(`http://192.168.254.107:3000/attendance/daily?teacherId=${id}`);
           const dailyCounts = [0, 0, 0, 0, 0];
           dailyResponse.data.forEach(d => {
             const index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(d.day);
@@ -83,7 +83,7 @@ export default function HomeScreen() {
             ],
           });
 
-          const weeklyResponse = await axios.get(`http://192.168.254.101:3000/attendance/weekly?teacherId=${id}`);
+          const weeklyResponse = await axios.get(`http://192.168.254.107:3000/attendance/weekly?teacherId=${id}`);
           const weeks = weeklyResponse.data.map(d => d.week);
           const weeklyCounts = weeklyResponse.data.map(d => d.presentCount);
           setWeeklyData({
@@ -95,7 +95,7 @@ export default function HomeScreen() {
             ],
           });
 
-          const monthlyResponse = await axios.get(`http://192.168.254.101:3000/attendance/monthly?teacherId=${id}`);
+          const monthlyResponse = await axios.get(`http://192.168.254.107:3000/attendance/monthly?teacherId=${id}`);
           const months = monthlyResponse.data.map(d => d.month);
           const monthlyCounts = monthlyResponse.data.map(d => d.presentCount);
           setMonthlyData({
@@ -156,7 +156,7 @@ export default function HomeScreen() {
       borderRadius: 16,
     },
     barPercentage: 0.5,
-    decimalPlaces: 0,
+    decimalPlaces: 0, // No decimals
   };
 
   const getCurrentData = () => {
@@ -171,20 +171,6 @@ export default function HomeScreen() {
         return dailyData;
     }
   };
-
-  const getPercentage = (value, total) => {
-    return ((value / total) * 100).toFixed(0) + '%';
-  };
-
-  const defaultPieChartData = [
-    {
-      name: 'No Data',
-      population: 1,
-      color: '#A32926',
-      legendFontColor: '#000',
-      legendFontSize: 15,
-    },
-  ];
 
   return (
     <View style={styles.container}>
@@ -227,16 +213,19 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <PieChart
-            data={genderData.length > 0 ? genderData : defaultPieChartData}
-            width={width}
-            height={220}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
+          <View style={styles.chartBoxContainer}>
+            <Text style={styles.analyticsTitle}>Gender Distribution</Text>
+            <PieChart
+              data={genderData}
+              width={width * 0.9}
+              height={150}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
+          </View>
 
           <View style={styles.tabContainer}>
             <TouchableOpacity onPress={() => setSelectedTab('daily')} style={[styles.tab, selectedTab === 'daily' && styles.activeTab]}>
@@ -250,7 +239,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.analyticsContainer}>
+          <View style={styles.chartBoxContainer}>
             <Text style={styles.analyticsTitle}>{`${selectedTab.charAt(0).toUpperCase() + selectedTab.slice(1)} Attendance`}</Text>
             <LineChart
               style={styles.chart}
@@ -274,7 +263,7 @@ export default function HomeScreen() {
               <Icon name="camera" size={40} color="#fff" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={handleProfile} style={[styles.iconWrapper]}>
+          <TouchableOpacity onPress={handleProfile} style={styles.iconWrapper}>
             <Icon name="user-alt" size={35} color="#A32926" />
           </TouchableOpacity>
         </View>
@@ -286,7 +275,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFF',
+    backgroundColor: '#c0c0c0',
   },
   headerContainer: {
     backgroundColor: '#A32926',
@@ -330,10 +319,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginVertical: 10,
-    width: '49%',
+    width: '45%',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
+    marginRight: 5,
+    marginLeft: 5,
   },
   dashboardCardContent: {
     alignItems: 'center',
@@ -349,16 +340,22 @@ const styles = StyleSheet.create({
     color: '#A32926',
     marginTop: 5,
   },
-  analyticsContainer: {
-    marginTop: 20,
+  chartBoxContainer: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 15,
     alignItems: 'center',
-    paddingRight: 20,
+    elevation: 3,
+    marginRight: 5,
+    marginLeft: 5,
   },
   analyticsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
+    textAlign: 'center',
   },
   chart: {
     marginTop: 10,
@@ -404,15 +401,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-  },
-  active: {
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    padding: 5,
   },
   tabContainer: {
     flexDirection: 'row',
