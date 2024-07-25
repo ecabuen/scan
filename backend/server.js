@@ -93,18 +93,19 @@ app.post('/login', (req, res) => {
 // Update profile endpoint
 const teacherImageStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const dir = '../scan/teacherimages';
+    const dir = path.join(__dirname, '../scan/teacherimages');
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
+      fs.mkdirSync(dir, { recursive: true });
     }
     cb(null, dir);
   },
   filename: function (req, file, cb) {
-    const { firstname, lastname } = req.body;
-    const filename = `${firstname}-${lastname}.jpg`;
+    const id = req.params.id;
+    const filename = `${id}.jpg`; // Corrected the syntax for template literal
     cb(null, filename);
   },
 });
+
 
 const uploadTeacherImage = multer({ storage: teacherImageStorage }).single('profilePic');
 
