@@ -36,7 +36,7 @@ export default function ProfileDetails() {
     formData.append('email', userEmail);
   
     if (uri) {
-      const filename = `${firstName}-${lastName}.jpg`;
+      const filename = `${id}.jpg`; // Change filename to teacherid.jpg
       formData.append('profilePic', {
         uri,
         name: filename,
@@ -80,10 +80,10 @@ export default function ProfileDetails() {
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
-      const imageName = `./${firstname}-${lastname}.jpg`;
+      const imageName = `./${id}.jpg`; // Use teacherid.jpg for fetching image
       return images(imageName);
     } catch (error) {
-      console.warn(`Image not found: ${firstname}-${lastname}.jpg. Using default image.`);
+      console.warn(`Image not found: ${id}.jpg. Using default image.`);
       return userIcon; 
     }
   };
