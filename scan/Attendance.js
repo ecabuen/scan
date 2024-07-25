@@ -22,7 +22,7 @@ export default function Attendance() {
   const fetchStudentData = async () => {
     try {
       // Fetch student data
-      const dataResponse = await axios.post(`http://192.168.254.101:3000/update-attendance`, {
+      const dataResponse = await axios.post(`http://192.168.254.107:3000/update-attendance`, {
         teacherId,
       }, {
         timeout: 10000,
@@ -34,7 +34,7 @@ export default function Attendance() {
       }));
 
       // Fetch student images
-      const picResponse = await axios.get(`http://192.168.254.101:3000/students/${teacherId}`, {
+      const picResponse = await axios.get(`http://192.168.254.107:3000/students/${teacherId}`, {
         timeout: 10000,
       });
 
@@ -102,7 +102,7 @@ export default function Attendance() {
         date: currentDate,
       });
 
-      await axios.post('http://192.168.254.101:3000/update-student-status', {
+      await axios.post('http://192.168.254.107:3000/update-student-status', {
         studentId,
         newStatus,
         date: currentDate,
@@ -138,6 +138,8 @@ export default function Attendance() {
         return 'red';
       case 'Late':
         return 'orange';
+      case 'Excused':
+        return 'blue';
       default:
         return 'gray';
     }
@@ -157,7 +159,7 @@ export default function Attendance() {
       {/* Header Section */}
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <FontAwesome5 name="arrow-left" size={24} color="#FFF" />
+          <FontAwesome5 name="arrow-left" size={20} color="#FFF" />
         </TouchableOpacity>
         <View style={styles.header}>
           <Text style={styles.headerText}>Attendance Management</Text>
@@ -181,6 +183,7 @@ export default function Attendance() {
           <Picker.Item label="Present" value="Present" />
           <Picker.Item label="Absent" value="Absent" />
           <Picker.Item label="Late" value="Late" />
+          <Picker.Item label="Excused" value="Excused" />
         </Picker>
       </View>
 
@@ -208,6 +211,7 @@ export default function Attendance() {
                     <Picker.Item label="Present" value="Present" />
                     <Picker.Item label="Absent" value="Absent" />
                     <Picker.Item label="Late" value="Late" />
+                    <Picker.Item label="Excused" value="Excused" />
                   </Picker>
                 </View>
               </View>
@@ -245,8 +249,9 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
+   
   },
   filterContainer: {
     flexDirection: 'row',
