@@ -523,7 +523,7 @@ app.get('/attendance/daily', (req, res) => {
   const dailyAttendanceQuery = `
     SELECT DATE_FORMAT(date, '%a') AS day, COUNT(*) AS presentCount
     FROM attendance
-    WHERE status = 'Present' AND WEEK(date) = WEEK(CURDATE()) AND studentID IN (
+    WHERE (status = 'Present' OR status = 'Late') AND WEEK(date) = WEEK(CURDATE()) AND studentID IN (
       SELECT studentID
       FROM student
       WHERE teacher_Id = ?
@@ -539,6 +539,7 @@ app.get('/attendance/daily', (req, res) => {
   });
 });
 
+
 app.get('/attendance/weekly', (req, res) => {
   const teacherId = req.query.teacherId;
 
@@ -547,7 +548,7 @@ app.get('/attendance/weekly', (req, res) => {
       CONCAT('Week ', WEEK(date, 1) - WEEK(DATE_SUB(CURDATE(), INTERVAL DAYOFMONTH(CURDATE())-1 DAY), 1) + 1) AS week,
       COUNT(*) AS presentCount
     FROM attendance
-    WHERE status = 'present' AND MONTH(date) = MONTH(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
+    WHERE (status = 'Present' OR status = 'Late') AND MONTH(date) = MONTH(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
     GROUP BY week;
   `;
 
@@ -558,6 +559,7 @@ app.get('/attendance/weekly', (req, res) => {
     res.json(weeklyResult);
   });
 });
+
 
 
 app.get('/attendance/monthly', (req, res) => {
@@ -584,7 +586,7 @@ app.get('/attendance/monthly', (req, res) => {
     const monthlyQuery = `
       SELECT DATE_FORMAT(date, '%b') AS month, COUNT(*) AS presentCount
       FROM attendance
-      WHERE status = 'present' AND YEAR(date) = YEAR(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
+      WHERE (status = 'Present' OR status = 'Late') AND YEAR(date) = YEAR(CURDATE()) AND studentID IN (SELECT studentID FROM student WHERE teacher_Id = ?)
       GROUP BY month
       ORDER BY
         FIELD(MONTH(date), ${earliestMonth}, ${earliestMonth + 1}, ${earliestMonth + 2}, ${earliestMonth + 3}, ${earliestMonth + 4}, ${earliestMonth + 5}, ${earliestMonth + 6}, ${earliestMonth + 7}, ${earliestMonth + 8}, ${earliestMonth + 9}, ${earliestMonth + 10}, ${earliestMonth + 11})
@@ -598,6 +600,7 @@ app.get('/attendance/monthly', (req, res) => {
     });
   });
 });
+
 
 
 // Endpoint for fetching filtered students
