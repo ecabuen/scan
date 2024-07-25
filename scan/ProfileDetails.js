@@ -14,6 +14,8 @@ export default function ProfileDetails() {
   const [lastName, setLastName] = useState(lastname);
   const [userEmail, setUserEmail] = useState(email);
   const [profileImage, setProfileImage] = useState(null);
+  const [emailInvalid, setEmailInvalid] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -62,12 +64,30 @@ export default function ProfileDetails() {
         Alert.alert('Error', 'Failed to update profile');
       }
     } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Failed to update profile');
+      if (error.response && error.response.status === 409) {
+        setEmailExists(true);
+      } else {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Failed to update profile');
+      }
     }
   };
   
   const handleUpdate = async () => {
+    // Input validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    setEmailInvalid(!emailRegex.test(userEmail));
+
+    if (!firstName || !lastName || !userEmail) {
+      Alert.alert('Update failed', 'All fields are required');
+      return;
+    }
+
+    if (!emailRegex.test(userEmail)) {
+      return;
+    }
+
     await uploadImage(profileImage, id);
     navigation.navigate('ProfileScreen', {
       firstname: firstName,
@@ -76,7 +96,7 @@ export default function ProfileDetails() {
       id: id
     });
   };
-  
+
   const getImageSource = () => {
     try {
       const images = require.context('./teacherimages', false, /\.jpg$/);
@@ -125,7 +145,7 @@ export default function ProfileDetails() {
             onChangeText={setLastName}
           />
         </View>
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, (emailInvalid || emailExists) && styles.inputError]}>
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
@@ -133,11 +153,16 @@ export default function ProfileDetails() {
             onChangeText={setUserEmail}
           />
         </View>
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-        <Text style={styles.updateButtonText}>Update Profile</Text>
-      </TouchableOpacity>
+        {emailInvalid && (
+          <Text style={styles.errorText}>Invalid email format</Text>
+        )}
+        {emailExists && (
+          <Text style={styles.errorText}>Email already exists</Text>
+        )}
+        <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+          <Text style={styles.updateButtonText}>Update Profile</Text>
+        </TouchableOpacity>
       </View>
-
     </View>
   );
 }
@@ -164,7 +189,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFF',
     textAlign: 'center',
-    paddingRight:125
+    paddingRight: 125,
   },
   contentContainer: {
     flex: 1,
@@ -207,13 +232,22 @@ const styles = StyleSheet.create({
     width: '100%',
     fontSize: 17,
   },
+  inputError: {
+    borderBottomColor: 'red',
+    borderBottomWidth: 1,
+  },
+  errorText: {
+    color: 'red',
+    marginTop: -15,
+    marginBottom: 10,
+  },
   updateButton: {
     backgroundColor: '#A32926',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     width: '100%',
-    marginTop:10
+    marginTop: 10,
   },
   updateButtonText: {
     color: '#FFF',
