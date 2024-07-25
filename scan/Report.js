@@ -25,7 +25,7 @@ export default function Report() {
 
   const fetchStudents = async () => {
     try {
-      const response = await axios.get(`http://192.168.254.101:3000/students/${teacherId}`, {
+      const response = await axios.get(`http://192.168.254.107:3000/students/${teacherId}`, {
         timeout: 10000,
       });
       setStudents(response.data.data);
@@ -36,7 +36,7 @@ export default function Report() {
 
   const fetchFilteredStudents = async (startDate, endDate) => {
     try {
-      const response = await axios.get(`http://192.168.254.101:3000/students/${teacherId}/filter`, {
+      const response = await axios.get(`http://192.168.254.107:3000/students/${teacherId}/filter`, {
         params: {
           startDate: formatDateForAPI(startDate),
           endDate: formatDateForAPI(endDate),
@@ -127,7 +127,7 @@ export default function Report() {
     Object.keys(attendanceMap).forEach(name => {
       dateRange.forEach(date => {
         if (attendanceMap[name][date] === undefined) {
-          attendanceMap[name][date] = 'Absent';
+          attendanceMap[name][date] = 'No Record';
         }
       });
     });
@@ -157,7 +157,7 @@ export default function Report() {
       {/* Header Section */}
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <FontAwesome5 name="arrow-left" size={24} color="#FFF" />
+          <FontAwesome5 name="arrow-left" size={20} color="#FFF" />
         </TouchableOpacity>
         <View style={styles.header}>
           <Text style={styles.headerText}>Attendance Report</Text>
@@ -165,56 +165,75 @@ export default function Report() {
       </View>
 
       {/* Content Section */}
-      <View style={styles.contentSection}>
-        <ScrollView style={styles.scrollView}>
-          {students.map((student, idx) => (
-            <View key={idx} style={styles.studentContainer}>
-              <Image
-                source={getImageSource(student.profile_pic)}
-                style={styles.profilePic}
-              />
-              <View style={styles.studentInfo}>
-                <Text style={styles.studentName}>{student.name}</Text>
-                <View style={styles.statusContainer}>
-                  <FontAwesome5
-                    name={
-                      student.attendanceStatus === 'Present'
-                        ? 'check'
-                        : student.attendanceStatus === 'Late'
-                        ? 'clock'
-                        : 'times'
-                    }
-                    size={20}
-                    color={
-                      student.attendanceStatus === 'Present'
-                        ? 'green'
-                        : student.attendanceStatus === 'Late'
-                        ? 'orange'
-                        : 'red'
-                    }
-                    style={styles.statusIcon}
-                  />
-                  <Text
-                    style={[
-                      styles.studentStatus,
-                      {
-                        color:
-                          student.attendanceStatus === 'Present'
-                            ? 'green'
-                            : student.attendanceStatus === 'Late'
-                            ? 'orange'
-                            : 'red',
-                      },
-                    ]}
-                  >
-                    {student.attendanceStatus}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
+<View style={styles.contentSection}>
+  <ScrollView style={styles.scrollView}>
+    {students.map((student, idx) => (
+      <View key={idx} style={styles.studentContainer}>
+        <Image
+          source={getImageSource(student.profile_pic)}
+          style={styles.profilePic}
+        />
+        <View style={styles.studentInfo}>
+          <Text style={styles.studentName}>{student.name}</Text>
+          <View style={styles.statusContainer}>
+            <FontAwesome5
+              name={
+                student.attendanceStatus === 'Present'
+                  ? 'check'
+                  : student.attendanceStatus === 'Late'
+                  ? 'clock'
+                  : student.attendanceStatus === 'Excused'
+                  ? 'hand-paper'
+                  : student.attendanceStatus === 'Absent'
+                  ? 'times'
+                  : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                  ? 'info-circle'
+                  : 'info-circle' // Default to info-circle if the status is unknown
+              }
+              size={20}
+              color={
+                student.attendanceStatus === 'Present'
+                  ? 'green'
+                  : student.attendanceStatus === 'Late'
+                  ? 'orange'
+                  : student.attendanceStatus === 'Excused'
+                  ? 'blue' // or 'lightblue'
+                  : student.attendanceStatus === 'Absent'
+                  ? 'red'
+                  : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                  ? 'gray'
+                  : 'gray' // Default to gray if the status is unknown
+              }
+              style={styles.statusIcon}
+            />
+            <Text
+              style={[
+                styles.studentStatus,
+                {
+                  color:
+                    student.attendanceStatus === 'Present'
+                      ? 'green'
+                      : student.attendanceStatus === 'Late'
+                      ? 'orange'
+                      : student.attendanceStatus === 'Excused'
+                      ? 'blue' // or 'lightblue'
+                      : student.attendanceStatus === 'Absent'
+                      ? 'red'
+                      : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                      ? 'gray'
+                      : 'gray', // Default to gray if the status is unknown
+                },
+              ]}
+            >
+              {student.attendanceStatus || 'No Record'}
+            </Text>
+          </View>
+        </View>
       </View>
+    ))}
+  </ScrollView>
+</View>
+
 
       {/* Date Pickers and Export Button Section */}
       <View style={styles.dateFilterContainer}>
@@ -273,8 +292,9 @@ const styles = StyleSheet.create({
   },
   headerText: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
+    paddingLeft:10,
   },
   contentSection: {
     flex: 1,
