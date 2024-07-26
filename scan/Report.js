@@ -18,6 +18,8 @@ export default function Report() {
   const [endDate, setEndDate] = useState(new Date());
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [csvStartDate, setCsvStartDate] = useState(new Date());
+  const [csvEndDate, setCsvEndDate] = useState(new Date());
 
   useEffect(() => {
     fetchStudents();
@@ -43,25 +45,24 @@ export default function Report() {
         },
         timeout: 10000,
       });
-      setStudents(response.data.data);
+      return response.data.data;
     } catch (error) {
       console.error('Error fetching filtered students:', error.response || error.message);
+      return [];
     }
   };
 
   const onChangeStartDate = (event, selectedDate) => {
     setShowStartDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setStartDate(selectedDate);
-      fetchFilteredStudents(selectedDate, endDate);
+      setCsvStartDate(selectedDate);
     }
   };
 
   const onChangeEndDate = (event, selectedDate) => {
     setShowEndDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setEndDate(selectedDate);
-      fetchFilteredStudents(startDate, selectedDate);
+      setCsvEndDate(selectedDate);
     }
   };
 
@@ -98,31 +99,33 @@ export default function Report() {
   };
 
   const exportToCSV = async () => {
-    if (students.length === 0) {
+    const filteredStudents = await fetchFilteredStudents(csvStartDate, csvEndDate);
+
+    if (filteredStudents.length === 0) {
       Alert.alert('No data', 'There are no students to export.');
       return;
     }
-  
+
     // Create a list of dates in the date range
     const dateRange = [];
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(csvStartDate); d <= csvEndDate; d.setDate(d.getDate() + 1)) {
       dateRange.push(formatDateForRange(new Date(d))); // Format to DD/MM/YYYY
     }
-  
+
     // Create a map to store attendance records
     const attendanceMap = {};
-  
-    students.forEach(student => {
+
+    filteredStudents.forEach(student => {
       if (!attendanceMap[student.name]) {
         attendanceMap[student.name] = { Name: student.name };
       }
-  
+
       const date = formatDate(student.attendanceDate);
       if (dateRange.includes(date)) {
         attendanceMap[student.name][date] = student.attendanceStatus || 'Absent';
       }
     });
-  
+
     // Fill in missing dates with 'Absent'
     Object.keys(attendanceMap).forEach(name => {
       dateRange.forEach(date => {
@@ -131,26 +134,25 @@ export default function Report() {
         }
       });
     });
-  
+
     // Convert map to an array of records
     const csvData = Object.values(attendanceMap);
-  
+
     // Convert data to CSV
     const csv = Papa.unparse(csvData, { columns: ['Name', ...dateRange] });
-  
+
     console.log('CSV Data:', csv);
-  
+
     // Save CSV file and share
     const fileUri = FileSystem.documentDirectory + 'students_report.csv';
     await FileSystem.writeAsStringAsync(fileUri, csv);
-  
+
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(fileUri);
     } else {
       Alert.alert('Sharing not available', 'Cannot share the file.');
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -165,98 +167,99 @@ export default function Report() {
       </View>
 
       {/* Content Section */}
-<View style={styles.contentSection}>
-  <ScrollView style={styles.scrollView}>
-    {students.map((student, idx) => (
-      <View key={idx} style={styles.studentContainer}>
-        <Image
-          source={getImageSource(student.profile_pic)}
-          style={styles.profilePic}
-        />
-        <View style={styles.studentInfo}>
-          <Text style={styles.studentName}>{student.name}</Text>
-          <View style={styles.statusContainer}>
-            <FontAwesome5
-              name={
-                student.attendanceStatus === 'Present'
-                  ? 'check'
-                  : student.attendanceStatus === 'Late'
-                  ? 'clock'
-                  : student.attendanceStatus === 'Excused'
-                  ? 'hand-paper'
-                  : student.attendanceStatus === 'Absent'
-                  ? 'times'
-                  : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
-                  ? 'info-circle'
-                  : 'info-circle' // Default to info-circle if the status is unknown
-              }
-              size={20}
-              color={
-                student.attendanceStatus === 'Present'
-                  ? 'green'
-                  : student.attendanceStatus === 'Late'
-                  ? 'orange'
-                  : student.attendanceStatus === 'Excused'
-                  ? 'blue' // or 'lightblue'
-                  : student.attendanceStatus === 'Absent'
-                  ? 'red'
-                  : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
-                  ? 'gray'
-                  : 'gray' // Default to gray if the status is unknown
-              }
-              style={styles.statusIcon}
-            />
-            <Text
-              style={[
-                styles.studentStatus,
-                {
-                  color:
-                    student.attendanceStatus === 'Present'
-                      ? 'green'
-                      : student.attendanceStatus === 'Late'
-                      ? 'orange'
-                      : student.attendanceStatus === 'Excused'
-                      ? 'blue' // or 'lightblue'
-                      : student.attendanceStatus === 'Absent'
-                      ? 'red'
-                      : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
-                      ? 'gray'
-                      : 'gray', // Default to gray if the status is unknown
-                },
-              ]}
-            >
-              {student.attendanceStatus || 'No Record'}
-            </Text>
-          </View>
-        </View>
+      <View style={styles.contentSection}>
+        <ScrollView style={styles.scrollView}>
+          {students.map((student, idx) => (
+            <View key={idx} style={styles.studentContainer}>
+              <Image
+                source={getImageSource(student.profile_pic)}
+                style={styles.profilePic}
+              />
+              <View style={styles.studentInfo}>
+                <Text style={styles.studentName}>{student.name}</Text>
+                <View style={styles.statusContainer}>
+                  <FontAwesome5
+                    name={
+                      student.attendanceStatus === 'Present'
+                        ? 'check'
+                        : student.attendanceStatus === 'Late'
+                        ? 'clock'
+                        : student.attendanceStatus === 'Excused'
+                        ? 'hand-paper'
+                        : student.attendanceStatus === 'Absent'
+                        ? 'times'
+                        : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                        ? 'info-circle'
+                        : 'info-circle' // Default to info-circle if the status is unknown
+                    }
+                    size={20}
+                    color={
+                      student.attendanceStatus === 'Present'
+                        ? 'green'
+                        : student.attendanceStatus === 'Late'
+                        ? 'orange'
+                        : student.attendanceStatus === 'Excused'
+                        ? 'blue' // or 'lightblue'
+                        : student.attendanceStatus === 'Absent'
+                        ? 'red'
+                        : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                        ? 'gray'
+                        : 'gray' // Default to gray if the status is unknown
+                    }
+                    style={styles.statusIcon}
+                  />
+                  <Text
+                    style={[
+                      styles.studentStatus,
+                      {
+                        color:
+                          student.attendanceStatus === 'Present'
+                            ? 'green'
+                            : student.attendanceStatus === 'Late'
+                            ? 'orange'
+                            : student.attendanceStatus === 'Excused'
+                            ? 'blue' // or 'lightblue'
+                            : student.attendanceStatus === 'Absent'
+                            ? 'red'
+                            : student.attendanceStatus === 'No Record' || student.attendanceStatus === undefined
+                            ? 'gray'
+                            : 'gray', // Default to gray if the status is unknown
+                      },
+                    ]}
+                  >
+                    {student.attendanceStatus || 'No Record'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
       </View>
-    ))}
-  </ScrollView>
-</View>
-
 
       {/* Date Pickers and Export Button Section */}
       <View style={styles.dateFilterContainer}>
         <TouchableOpacity style={styles.datePickerButton} onPress={openStartDatePicker}>
-          <Text style={styles.datePickerButtonText}>{startDate.toDateString()}</Text>
+          <Text style={styles.datePickerButtonText}>{formatDateForRange(csvStartDate)}</Text>
         </TouchableOpacity>
         {showStartDatePicker && (
           <DateTimePicker
-            value={startDate}
+            value={csvStartDate}
             mode="date"
             display="default"
             onChange={onChangeStartDate}
+            maximumDate={new Date()}
           />
         )}
         <TouchableOpacity style={styles.datePickerButton} onPress={openEndDatePicker}>
-          <Text style={styles.datePickerButtonText}>{endDate.toDateString()}</Text>
+          <Text style={styles.datePickerButtonText}>{formatDateForRange(csvEndDate)}</Text>
         </TouchableOpacity>
         {showEndDatePicker && (
           <DateTimePicker
-            value={endDate}
+            value={csvEndDate}
             mode="date"
             display="default"
             onChange={onChangeEndDate}
+            maximumDate={new Date()}
           />
         )}
       </View>
