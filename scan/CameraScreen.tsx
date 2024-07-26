@@ -5,7 +5,7 @@ import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import axios from "axios";
 import Icon from 'react-native-vector-icons/FontAwesome'; // Add this import
 
-const REFRESH_TOKEN = '1//040QlNKw-PudgCgYIARAAGAQSNwF-L9Ir6AkGSBbvp7e9vwquSFN9EpMfNWfikaYLGENRZTSNQhB5yjY5k2CdVDn0Gl_MKFoFGmA';
+const REFRESH_TOKEN = '1//04T3ivi1L8lSSCgYIARAAGAQSNwF-L9IrHPfmrVDd_HV2X-mZ3TVbr6PNsyt9K8wTzbS7g3o6BjoqjLnTfaTjqlhoiuMSeEFnFVo';
 const CLIENT_ID = '735896738345-o22t3q495i91tr5kb2br0sis3klrepc5.apps.googleusercontent.com';
 const CLIENT_SECRET = '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'; // Replace with your client secret
 
@@ -13,7 +13,7 @@ export default function App({ navigation }) { // Add navigation prop
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraType>("back");
-  const [accessToken, setAccessToken] = useState<string | null>('ya29.a0AXooCguhLFJxPVISyfFnFW7GYK6rzc2757jjs7YPGNDdQs_ne22L9JXdhlhaE-gFoTaWXWO7omCAHhxf9ksZDl5QRECDdm6AACBFRY3TDrKyrU9SS7LWXQKBeFivQhuGEgdPHCHTBY4rMSoipMl6IzHzb81nmoPXtvXqaCgYKAf4SARASFQHGX2MiZtt6n1-NlyheGhjzhxqzAw0171');
+  const [accessToken, setAccessToken] = useState<string | null>('ya29.a0AXooCgsN108W9HPWmspc340-iSZQw6T6gMDQb80-an5xHf9tfIFyeHqC29R9eAiDmVe2TKyL1kvZqmt3kQng6E_rFGRyooaO-uQVYeXGYY6y6O2-VkKLnsHCAKyk76kNR5evXQ__-4hUgrz7tvMuvIJzshD5EIbpWx2gaCgYKAegSARISFQHGX2MilYjHVjie4tZcUZNPAHyd4g0171');
   const [labels, setLabels] = useState([]);
   const [error, setError] = useState('');
 
@@ -70,17 +70,19 @@ export default function App({ navigation }) { // Add navigation prop
     }
 
     try {
-      await sendEmail(
-        token,
-        "Attendance Notification",
-        "Dear Parent/Guardian, We are pleased to inform you that your child has been marked present at school today."
-      );
-      Alert.alert("Success", "Email sent successfully");
-    } catch (error) {
-      console.error("Error sending email:", error);
-      Alert.alert("Error", "Failed to send email: " + error.message);
-    }
-  };
+  await sendEmail(
+    token,
+    "Attendance Notification",
+    "Dear Parent/Guardian,\n\n" +
+    "       We are pleased to inform you that your child has been marked present at school today."
+  );
+Alert.alert("Success", "Email sent successfully");
+} catch (error) {
+  console.error("Error sending email:", error);
+  Alert.alert("Error", "Failed to send email: " + error.message);
+}
+};
+
 
   const sendEmail = async (token, subject, body) => {
     const email = createEmail(subject, body);
@@ -113,7 +115,7 @@ export default function App({ navigation }) { // Add navigation prop
   };
 
   const createEmail = (subject, body) => {
-    const to = ['jnkdenini@gmail.com'];
+    const to = ['arvin.kelly.butiong@gmail.com'];
     const from = 'me';
     const raw = `From: ${from}\r\nTo: ${to.join(', ')}\r\nSubject: ${subject}\r\n\r\n${body}`;
     return raw;
