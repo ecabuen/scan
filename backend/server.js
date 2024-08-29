@@ -631,6 +631,80 @@ WHERE s.teacher_id = ?
   });
 });
 
+//Dasboard top late,absent,present
+const getStudentAttendance = (status) => (req, res) => {
+  const teacherId = req.query.teacher_Id;
+  const statusColumn = `${status}_count`;
+  const statusCondition = status.charAt(0).toUpperCase() + status.slice(1);
+
+  const sql = `
+    SELECT s.studentID, s.name AS student_name, 
+           COUNT(a.status) AS ${statusColumn}
+    FROM attendance a
+    JOIN student s ON a.studentID = s.studentID
+    WHERE a.status = ? AND s.teacher_Id = ?
+    GROUP BY s.studentID, s.name
+    ORDER BY ${statusColumn} DESC
+    LIMIT 5;
+  `;
+
+  db.query(sql, [statusCondition, teacherId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ status: 'error', message: `Failed to fetch most ${status} students` });
+    }
+    res.status(200).json({ status: 'success', data: results });
+  });
+};
+
+app.get('/attendance/most-late-student', getStudentAttendance('late'));
+app.get('/attendance/most-present-student', getStudentAttendance('present'));
+app.get('/attendance/most-absent-student', getStudentAttendance('absent'));
+
+
+//with filter
+const getDateRange = (filter) => {
+  const today = new Date();
+  let startDate = new Date();
+  let endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0); // End of the current month
+
+  if (filter === 'week') {
+    startDate.setDate(today.getDate() - today.getDay()); // Start of the week
+    endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6); // End of the week
+  } else if (filter === 'month') {
+    startDate.setDate(1); // Start of the month
+  }
+
+  return [startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]];
+};
+
+const createStudentFilterRoute = (status) => (req, res) => {
+  const teacherId = req.query.teacher_Id;
+  const filter = req.query.filter; // 'week' or 'month'
+  const [startDate, endDate] = getDateRange(filter);
+
+  const sql = `
+    SELECT s.studentID, s.name AS student_name, 
+           COUNT(a.status) AS ${status}_count
+    FROM attendance a
+    JOIN student s ON a.studentID = s.studentID
+    WHERE a.status = ? AND s.teacher_Id = ?
+    AND a.date BETWEEN ? AND ?
+    GROUP BY s.studentID, s.name
+    ORDER BY ${status}_count DESC;
+  `;
+
+  db.query(sql, [status.charAt(0).toUpperCase() + status.slice(1), teacherId, startDate, endDate], (err, results) => {
+    if (err) {
+      return res.status(500).json({ status: 'error', message: `Failed to fetch most ${status} students` });
+    }
+    res.status(200).json({ status: 'success', data: results });
+  });
+};
+
+app.get('/attendance/most-late-student-filter', createStudentFilterRoute('late'));
+app.get('/attendance/most-present-student-filter', createStudentFilterRoute('present'));
+app.get('/attendance/most-absent-student-filter', createStudentFilterRoute('absent'));
 
 
 app.listen(port, () => {
