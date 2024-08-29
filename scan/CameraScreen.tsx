@@ -70,19 +70,18 @@ export default function App({ navigation }) { // Add navigation prop
     }
 
     try {
-  await sendEmail(
-    token,
-    "Attendance Notification",
-    "Dear Parent/Guardian,\n\n" +
-    "       We are pleased to inform you that your child has been marked present at school today."
-  );
-Alert.alert("Success", "Email sent successfully");
-} catch (error) {
-  console.error("Error sending email:", error);
-  Alert.alert("Error", "Failed to send email: " + error.message);
-}
-};
-
+      await sendEmail(
+        token,
+        "Attendance Notification",
+        "Dear Parent/Guardian,\n\n" +
+        "       We are pleased to inform you that your child has been marked present at school today."
+      );
+      Alert.alert("Success", "Email sent successfully");
+    } catch (error) {
+      console.error("Error sending email:", error);
+      Alert.alert("Error", "Failed to send email: " + error.message);
+    }
+  };
 
   const sendEmail = async (token, subject, body) => {
     const email = createEmail(subject, body);
@@ -200,12 +199,15 @@ Alert.alert("Success", "Email sent successfully");
       </CameraView>
     );
   };
-  
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-left" size={30} color="#FFF" />
-      </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
+          <Icon name="arrow-left" size={30} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerText}>    Total: 0/10 students</Text>
+      </View>
       {renderCamera()}
       {labels.length > 0 && (
         <View style={styles.labelContainer}>
@@ -226,12 +228,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerButton: {
+  header: {
     position: 'absolute',
     top: 40,
-    left: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',  // Center horizontally
     zIndex: 10,
+    paddingHorizontal: 10,
+  },
+  headerButton: {
+    position: 'absolute',
+    left: 10,
     padding: 10,
+  },
+  headerText: {
+    color: '#FFF',
+    fontSize: 16,
   },
   camera: {
     flex: 1,
@@ -259,7 +274,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    marginLeft:38
+    marginLeft: 38,
   },
   shutterText: {
     color: "white",
@@ -298,7 +313,6 @@ const styles = StyleSheet.create({
     left: '25%',  // Adjust as needed
     width: '55%',  // Adjust as needed
     height: '30%',  // Adjust as needed
-    
   },
   corner: {
     position: 'absolute',
