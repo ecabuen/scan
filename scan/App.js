@@ -13,6 +13,7 @@ import ProfileDetails from './ProfileDetails';
 import Report from './Report';
 import Attendance from './Attendance';
 import Password from './Password';
+import Performance from './Performance';
 
 const Stack = createStackNavigator();
 
@@ -33,6 +34,7 @@ export default function App() {
         <Stack.Screen name="Report" component={Report} options={{ headerShown: false }}/>
         <Stack.Screen name="Attendance" component={Attendance} options={{ headerShown: false }}/>
         <Stack.Screen name="Password" component={Password} options={{ headerShown: false }}/>
+        <Stack.Screen name="Performance" component={Performance} options={{ headerShown: false }}/>
        
       </Stack.Navigator>
     </NavigationContainer>
