@@ -117,10 +117,8 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.contentSection}>
-        <TouchableOpacity style={styles.option} onPress={handleRegister}>
-          <Icon name="user-plus" size={25} color="#A32926" style={styles.optionIcon} />
-          <Text style={styles.optionText}> Student Management</Text>
-        </TouchableOpacity>
+      
+       
         <TouchableOpacity style={styles.option} onPress={handleAttendance}>
           <Icon name="calendar-day" size={25} color="#A32926" style={styles.optionIcon}  />
           <Text style={styles.optionText}>   Attendance Management</Text>
