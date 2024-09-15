@@ -8,12 +8,18 @@ import { Picker } from '@react-native-picker/picker';
 export default function EditStudentScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { studentName, studentID, studentGmail, gender, studentProfilePic } = route.params || {};
+  const { studentName, studentID, studentGmail, gender, studentProfilePic, guardianName, guardianContact, guardianEmail } = route.params || {};
+  
   const [name, setName] = useState(studentName || '');
   const [gmail, setGmail] = useState(studentGmail || '');
   const [studentGender, setGender] = useState(gender || '');
   const [profilePic, setProfilePic] = useState(studentProfilePic || '');
   const [selectedImageUri, setSelectedImageUri] = useState('');
+
+  // New state for Guardian Information
+  const [guardian, setGuardian] = useState(guardianName || '');
+  const [contactNumber, setContactNumber] = useState(guardianContact || '');
+  const [guardianEmailState, setGuardianEmailState] = useState(guardianEmail || '');
 
   const handleBack = () => {
     navigation.goBack();
@@ -34,15 +40,19 @@ export default function EditStudentScreen() {
   };
 
   const handleUpdate = async () => {
-    if (!name || !gmail) {
-      Alert.alert('Error', 'Field must not be empty');
+    if (!name || !gmail || !guardian || !contactNumber || !guardianEmailState) {
+      Alert.alert('Error', 'All fields must not be empty');
       return;
     }
 
-    const updateData = {};
-    updateData.name = name;
-    updateData.gmail = gmail;
-    updateData.gender = studentGender;
+    const updateData = {
+      name,
+      gmail,
+      gender: studentGender,
+      guardian,
+      contactNumber,
+      guardianEmail: guardianEmailState,
+    };
 
     if (selectedImageUri) { // If a new image has been selected
       const formData = new FormData();
@@ -58,7 +68,7 @@ export default function EditStudentScreen() {
       });
 
       try {
-        const imageResponse = await fetch('http://192.168.254.101:3000/upload-image', {
+        const imageResponse = await fetch('http://192.168.254.107:3000/upload-image', {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -84,7 +94,7 @@ export default function EditStudentScreen() {
     }
 
     try {
-      const response = await fetch(`http://192.168.254.101:3000/update-student/${studentID}`, {
+      const response = await fetch(`http://192.168.254.107:3000/update-student/${studentID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -169,6 +179,23 @@ export default function EditStudentScreen() {
             <Picker.Item label="Female" value="Female" />
           </Picker>
         </View>
+
+        {/* Guardian Information Fields */}
+        <TextInput
+          style={styles.input}
+          placeholder="Guardian Name"
+          value={guardian}
+          onChangeText={text => setGuardian(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Guardian Contact Number"
+          value={contactNumber}
+          keyboardType="phone-pad"
+          onChangeText={text => setContactNumber(text)}
+        />
+        
+
         <TouchableOpacity onPress={handleUpdate} style={styles.updateButton}>
           <Text style={styles.updateButtonText}>Update</Text>
         </TouchableOpacity>
@@ -178,6 +205,7 @@ export default function EditStudentScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Existing styles
   container: {
     flex: 1,
     backgroundColor: '#F2F2F2',
