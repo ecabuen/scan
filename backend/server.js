@@ -1,3 +1,4 @@
+
 const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
@@ -372,6 +373,81 @@ app.post('/update-attendance', (req, res) => {
       .catch(err => {
         res.status(500).json({ status: 'error', message: 'Failed to update attendance' });
       });
+  });
+});
+
+// present
+app.post('/present', (req, res) => {
+  const { teacherId } = req.body;
+  
+  const fetchSql = `
+    SELECT s.studentID AS studentId, s.name, s.profile_pic, a.status
+    FROM student s
+    LEFT JOIN attendance a ON s.studentID = a.studentID AND a.date = CURDATE()
+    WHERE s.teacher_id = ? AND a.status = 'Present';
+  `;
+
+  db.query(fetchSql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ status: 'not found', message: 'No records found for Present students.' });
+    }
+
+    res.status(200).json({ status: 'success', data: results });
+  });
+});
+
+// absent
+app.post('/absent', (req, res) => {
+  const { teacherId } = req.body;
+  
+  const fetchSql = `
+    SELECT s.studentID AS studentId, s.name, s.profile_pic, a.status
+    FROM student s
+    LEFT JOIN attendance a ON s.studentID = a.studentID AND a.date = CURDATE()
+    WHERE s.teacher_id = ? AND a.status = 'Absent';
+  `;
+
+  db.query(fetchSql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ status: 'not found', message: 'No records found for Absent students.' });
+    }
+
+    res.status(200).json({ status: 'success', data: results });
+  });
+});
+
+// Late
+app.post('/late', (req, res) => {
+  const { teacherId } = req.body;
+  
+  const fetchSql = `
+    SELECT s.studentID AS studentId, s.name, s.profile_pic, a.status
+    FROM student s
+    LEFT JOIN attendance a ON s.studentID = a.studentID AND a.date = CURDATE()
+    WHERE s.teacher_id = ? AND a.status = 'Late';
+  `;
+
+  db.query(fetchSql, [teacherId], (err, results) => {
+    if (err) {
+      console.error('SQL error:', err);
+      return res.status(500).json({ status: 'error', message: 'Failed to fetch students' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ status: 'not found', message: 'No records found for Late students.' });
+    }
+
+    res.status(200).json({ status: 'success', data: results });
   });
 });
 
