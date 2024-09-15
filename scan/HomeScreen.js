@@ -72,7 +72,7 @@ export default function HomeScreen() {
           setHasPermission(status === "granted");
 
           const todayResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/today?teacherId=${id}`
+            `http://192.168.254.107:3000/attendance/today?teacherId=${id}`
           );
           setPresentStudents(todayResponse.data.present);
           setLateStudents(todayResponse.data.late);
@@ -88,7 +88,7 @@ export default function HomeScreen() {
           setGenderData(genderCounts);
 
           const dailyResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/daily?teacherId=${id}`
+            `http://192.168.254.107:3000/attendance/daily?teacherId=${id}`
           );
           const dailyCounts = [0, 0, 0, 0, 0];
           dailyResponse.data.forEach((d) => {
@@ -107,7 +107,7 @@ export default function HomeScreen() {
           });
 
           const weeklyResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/weekly?teacherId=${id}`
+            `http://192.168.254.107:3000/attendance/weekly?teacherId=${id}`
           );
           const weeks = weeklyResponse.data.map((d) => d.week);
           const weeklyCounts = weeklyResponse.data.map((d) => d.presentCount);
@@ -122,24 +122,24 @@ export default function HomeScreen() {
 
           //late
           const lateStudentResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/most-late-student?teacher_Id=${id}`
+            `http://192.168.254.107:3000/attendance/most-late-student?teacher_Id=${id}`
           );
           setTopLateStudents(lateStudentResponse.data.data);
 
           //present
           const presentStudentResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/most-present-student?teacher_Id=${id}`
+            `http://192.168.254.107:3000/attendance/most-present-student?teacher_Id=${id}`
           );
           setTopPresentStudents(presentStudentResponse.data.data);
 
           //absent
           const absentStudentResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/most-absent-student?teacher_Id=${id}`
+            `http://192.168.254.107:3000/attendance/most-absent-student?teacher_Id=${id}`
           );
           setTopAbsentStudents(absentStudentResponse.data.data);
 
           const monthlyResponse = await axios.get(
-            `http://192.168.254.100:3000/attendance/monthly?teacherId=${id}`
+            `http://192.168.254.107:3000/attendance/monthly?teacherId=${id}`
           );
           const months = monthlyResponse.data.map((d) => d.month);
           const monthlyCounts = monthlyResponse.data.map((d) => d.presentCount);
@@ -218,59 +218,78 @@ export default function HomeScreen() {
 
   const handleCardPress = () => {
     navigation.navigate("Attendance", { id });
-  };
+};
+  const present = () => {
+  navigation.navigate("Present", { id });
+};
+const absent = () => {
+  navigation.navigate("Absent", { id });
+};
+const late = () => {
+  navigation.navigate("Latecomers", { id });
+};
+const currentDate = new Date().toISOString().split('T')[0];
+const getCurrentDate = () => {
+  const today = new Date();
+  return today.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>Dashboard</Text>
+          <Text style={styles.headerText}>Hi Teacher!</Text>
+          
+          <Text style={styles.dateText}>{getCurrentDate()}</Text>
         </View>
       </View>
 
       <View style={styles.contentSection}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.cardContainer}>
-            <TouchableOpacity
-              onPress={handleCardPress}
-              style={styles.dashboardCard}
-            >
-              <Icon name="users" size={30} color="#A32926" />
-              <View style={styles.dashboardCardContent}>
-                <Text style={styles.dashboardCardLabel}>Total Students</Text>
-                <Text style={styles.dashboardCardValue}>{totalStudents}</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleCardPress}
-              style={styles.dashboardCard}
-            >
-              <Icon name="user-check" size={30} color="#A32926" />
-              <View style={styles.dashboardCardContent}>
-                <Text style={styles.dashboardCardLabel}>Present</Text>
-                <Text style={styles.dashboardCardValue}>{presentStudents}</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleCardPress}
-              style={styles.dashboardCard}
-            >
-              <Icon name="user-times" size={30} color="#A32926" />
-              <View style={styles.dashboardCardContent}>
-                <Text style={styles.dashboardCardLabel}>Absent</Text>
-                <Text style={styles.dashboardCardValue}>{absentStudents}</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleCardPress}
-              style={styles.dashboardCard}
-            >
-              <Icon name="user-clock" size={30} color="#A32926" />
-              <View style={styles.dashboardCardContent}>
-                <Text style={styles.dashboardCardLabel}>Late</Text>
-                <Text style={styles.dashboardCardValue}>{lateStudents}</Text>
-              </View>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleCardPress()}
+            style={styles.dashboardCard}
+          >
+            <Icon name="users" size={30} color="#A32926" />
+            <View style={styles.dashboardCardContent}>
+              <Text style={styles.dashboardCardLabel}>Total Students</Text>
+              <Text style={styles.dashboardCardValue}>{totalStudents}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => present()}
+            style={styles.dashboardCard}
+          >
+            <Icon name="user-check" size={30} color="#A32926" />
+            <View style={styles.dashboardCardContent}>
+              <Text style={styles.dashboardCardLabel}>Present</Text>
+              <Text style={styles.dashboardCardValue}>{presentStudents}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => absent()}
+            style={styles.dashboardCard}
+          >
+            <Icon name="user-times" size={30} color="#A32926" />
+            <View style={styles.dashboardCardContent}>
+              <Text style={styles.dashboardCardLabel}>Absent</Text>
+              <Text style={styles.dashboardCardValue}>{absentStudents}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => late()}
+            style={styles.dashboardCard}
+          >
+            <Icon name="user-clock" size={30} color="#A32926" />
+            <View style={styles.dashboardCardContent}>
+              <Text style={styles.dashboardCardLabel}>Late</Text>
+              <Text style={styles.dashboardCardValue}>{lateStudents}</Text>
+            </View>
+          </TouchableOpacity>
           </View>
 
           <View style={styles.chartBoxContainer}>
@@ -437,6 +456,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingTop: 40,
     paddingBottom: 60,
+    flexDirection: 'row', // Change to row to align header text and date
+    justifyContent: 'space-between', // Space between header text and date
+    width: '100%', // Ensure full width
+  },
+  dateText: {
+    color: "#FFFF",
+    fontSize: 16,
+    fontWeight: "normal", // Keep normal weight to differentiate from header text
   },
   headerText: {
     color: "#FFFF",
