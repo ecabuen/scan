@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { Picker } from '@react-native-picker/picker';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function Attendance() {
@@ -78,6 +79,18 @@ export default function Attendance() {
     });
     setFilteredStudents(filtered);
   };
+  const handleEdit = (studentName, studentID, gmail, gender, profilePic, guardian, guardiancontact) => {
+    navigation.navigate('EditStudentScreen', {
+      studentName,
+      studentID,
+      studentGmail: gmail,
+      gender,
+      studentProfilePic: profilePic,
+      guardian,            
+      guardiancontact     
+    });
+  };
+  
 
   const handleStatusChange = async (index, newStatus) => {
     const updatedStudents = [...students];
@@ -194,15 +207,17 @@ export default function Attendance() {
           {filteredStudents.map((student, idx) => (
             <View key={idx} style={styles.studentContainer}>
               <Image
-                source={getImageSource(student.profile_pic)}
-                style={styles.profilePic}
+                source={getImageSource(student.profile_pic)} 
+                style={styles.profilePic} 
               />
               <View style={styles.studentInfo}>
                 <View style={styles.nameAndPicker}>
-                  <Text style={styles.studentName}>{student.name}</Text>
+                  <Text style={styles.studentName} onPress={() => handleEdit(student.name, student.studentID, student.gmail, student.gender, student.profile_pic, student.guardian, student.guardiancontact)}>{student.name}</Text>
+                  
                   <Text style={[styles.statusText, { color: getStatusCircleColor(student.attendanceStatus) }]}>
                     {student.attendanceStatus}
                   </Text>
+                  
                   <Picker
                     selectedValue={student.attendanceStatus}
                     style={styles.pickerInline}
