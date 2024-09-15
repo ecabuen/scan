@@ -14,6 +14,9 @@ import Report from './Report';
 import Attendance from './Attendance';
 import Password from './Password';
 import Performance from './Performance';
+import Present from './Present';
+import Absent from './Absent';
+import Latecomers from './Latecomers';
 
 const Stack = createStackNavigator();
 
@@ -22,7 +25,6 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CameraScreen" component={CameraScreen} options={{ headerShown: false }} />
@@ -33,9 +35,11 @@ export default function App() {
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Report" component={Report} options={{ headerShown: false }}/>
         <Stack.Screen name="Attendance" component={Attendance} options={{ headerShown: false }}/>
+        <Stack.Screen name="Present" component={Present} options={{ headerShown: false }}/>
+        <Stack.Screen name="Absent" component={Absent} options={{ headerShown: false }}/>
+        <Stack.Screen name="Latecomers" component={Latecomers} options={{ headerShown: false }}/>
         <Stack.Screen name="Password" component={Password} options={{ headerShown: false }}/>
         <Stack.Screen name="Performance" component={Performance} options={{ headerShown: false }}/>
-       
       </Stack.Navigator>
     </NavigationContainer>
   );
